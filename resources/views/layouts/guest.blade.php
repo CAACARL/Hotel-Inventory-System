@@ -312,28 +312,7 @@
             <div class="relative w-full max-w-md">
                 <!-- Hotel Logo and Branding -->
                 <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-20 h-20 hotel-gradient rounded-2xl shadow-2xl mb-4 floating-animation">
-                        <svg class="w-10 h-10 text-white" viewBox="0 0 100 100" fill="none">
-                            <!-- Geometric I Logo -->
-                            <g stroke="currentColor" stroke-width="2" fill="none">
-                                <!-- Top left square -->
-                                <rect x="10" y="10" width="15" height="15"/>
-                                <rect x="12" y="12" width="11" height="11"/>
-                                <!-- Top right square -->
-                                <rect x="75" y="10" width="15" height="15"/>
-                                <rect x="77" y="12" width="11" height="11"/>
-                                <!-- Center vertical line -->
-                                <rect x="45" y="10" width="10" height="80"/>
-                                <rect x="47" y="12" width="6" height="76"/>
-                                <!-- Bottom left square -->
-                                <rect x="10" y="75" width="15" height="15"/>
-                                <rect x="12" y="77" width="11" height="11"/>
-                                <!-- Bottom right square -->
-                                <rect x="75" y="75" width="15" height="15"/>
-                                <rect x="77" y="77" width="11" height="11"/>
-                            </g>
-                        </svg>
-                    </div>
+                    <img src="{{ asset('images/pepega.webp') }}" alt="Icon Venue & Suites" class="w-24 h-24 object-contain mb-4 floating-animation mx-auto block">
                     <h1 class="text-3xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 bg-clip-text text-transparent mb-2">
                         Icon Venue & Suites
                     </h1>
@@ -349,23 +328,6 @@
                     </div>
 
                     {{ $slot }}
-                </div>
-
-                <!-- Demo Credentials -->
-                <div class="mt-6 glass-effect rounded-2xl p-4 border border-white/20">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-3 text-center">Demo Credentials</h3>
-                    <div class="grid grid-cols-1 gap-3 text-xs">
-                        <div class="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                            <div class="font-semibold text-amber-900">Administrator</div>
-                            <div class="text-amber-700">admin@iconvenue.com</div>
-                            <div class="text-amber-600">password</div>
-                        </div>
-                        <div class="bg-yellow-50 rounded-lg p-3 border border-yellow-200">
-                            <div class="font-semibold text-yellow-900">Staff Member</div>
-                            <div class="text-yellow-700">staff@iconvenue.com</div>
-                            <div class="text-yellow-600">password</div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

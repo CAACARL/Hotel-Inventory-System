@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main Logo Symbol Only - White Version -->
+  <g transform="translate(100, 100)" fill="none" stroke="white" stroke-width="6">
+    <!-- Top Left Square -->
+    <rect x="-80" y="-60" width="40" height="40" rx="3"/>
+    <rect x="-70" y="-50" width="20" height="20" rx="1"/>
+    
+    <!-- Top Right Square -->
+    <rect x="40" y="-60" width="40" height="40" rx="3"/>
+    <rect x="50" y="-50" width="20" height="20" rx="1"/>
+    
+    <!-- Center Vertical Lines -->
+    <rect x="-15" y="-60" width="30" height="120" rx="2"/>
+    <rect x="-7" y="-50" width="14" height="100" rx="1"/>
+    
+    <!-- Bottom Left Square -->
+    <rect x="-80" y="20" width="40" height="40" rx="3"/>
+    <rect x="-70" y="30" width="20" height="20" rx="1"/>
+    
+    <!-- Bottom Right Square -->
+    <rect x="40" y="20" width="40" height="40" rx="3"/>
+    <rect x="50" y="30" width="20" height="20" rx="1"/>
+  </g>
+</svg>

@@ -106,11 +106,4 @@
             </button>
         </div>
     </form>
-
-    <!-- Additional Info -->
-    <div class="mt-6 text-center">
-        <p class="text-xs text-gray-500">
-            Secure access to Icon Venue & Suites inventory management system
-        </p>
-    </div>
 </x-guest-layout>

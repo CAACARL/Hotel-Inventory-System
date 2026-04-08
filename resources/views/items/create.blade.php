@@ -40,9 +40,7 @@
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;" required>
                                     <option value="">Select Category</option>
                                     @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                                            {{ $category->name }}
-                                        </option>
+                                        @include('items.partials.category-option', ['category' => $category])
                                     @endforeach
                                 </select>
                                 @error('category_id')
@@ -50,12 +48,18 @@
                                 @enderror
                             </div>
 
-                            <div class="md:col-span-2">
-                                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                <textarea name="description" id="description" rows="3" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
-                                    placeholder="Enter item description (optional)">{{ old('description') }}</textarea>
-                                @error('description')
+                            <div>
+                                <label for="department_id" class="block text-sm font-semibold text-gray-700 mb-2">Department (Optional)</label>
+                                <select name="department_id" id="department_id" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;">
+                                    <option value="">Select Department</option>
+                                    @foreach($departments as $department)
+                                        <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                            {{ $department->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('department_id')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -66,6 +70,16 @@
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;" 
                                     placeholder="0" required>
                                 @error('quantity')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                <textarea name="description" id="description" rows="3" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                    placeholder="Enter item description (optional)">{{ old('description') }}</textarea>
+                                @error('description')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -115,13 +129,137 @@
                             </div>
 
                             <div>
-                                <label for="unit_price" class="block text-sm font-semibold text-gray-700 mb-2">Unit Price (Optional)</label>
+                                <label for="unit_price" class="block text-sm font-semibold text-gray-700 mb-2">Unit Price in Pesos (Optional)</label>
                                 <input type="number" name="unit_price" id="unit_price" value="{{ old('unit_price') }}" min="0" step="0.01"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
                                     placeholder="0.00">
                                 @error('unit_price')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                            </div>
+                        </div>
+
+                        <!-- Depreciation Section -->
+                        <div class="mt-8 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                Asset & Depreciation Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="purchase_price" class="block text-sm font-semibold text-gray-700 mb-2">Purchase Price (Optional)</label>
+                                    <input type="number" name="purchase_price" id="purchase_price" value="{{ old('purchase_price') }}" min="0" step="0.01"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                        placeholder="0.00">
+                                    @error('purchase_price')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="purchase_date" class="block text-sm font-semibold text-gray-700 mb-2">Purchase Date (Optional)</label>
+                                    <input type="date" name="purchase_date" id="purchase_date" value="{{ old('purchase_date') }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;">
+                                    @error('purchase_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="useful_life_years" class="block text-sm font-semibold text-gray-700 mb-2">Useful Life (Years)</label>
+                                    <input type="number" name="useful_life_years" id="useful_life_years" value="{{ old('useful_life_years') }}" min="1" max="50"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                        placeholder="5">
+                                    @error('useful_life_years')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="depreciation_method" class="block text-sm font-semibold text-gray-700 mb-2">Depreciation Method</label>
+                                    <select name="depreciation_method" id="depreciation_method" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;">
+                                        <option value="none" {{ old('depreciation_method', 'none') == 'none' ? 'selected' : '' }}>No Depreciation</option>
+                                        <option value="straight_line" {{ old('depreciation_method') == 'straight_line' ? 'selected' : '' }}>Straight Line</option>
+                                        <option value="declining_balance" {{ old('depreciation_method') == 'declining_balance' ? 'selected' : '' }}>Declining Balance</option>
+                                    </select>
+                                    @error('depreciation_method')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="salvage_value" class="block text-sm font-semibold text-gray-700 mb-2">Salvage Value (Optional)</label>
+                                    <input type="number" name="salvage_value" id="salvage_value" value="{{ old('salvage_value') }}" min="0" step="0.01"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                        placeholder="0.00">
+                                    @error('salvage_value')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Batch Information Section -->
+                        <div class="mt-8 pt-6 border-t border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                </svg>
+                                Batch Information (Optional)
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="manufacture_date" class="block text-sm font-semibold text-gray-700 mb-2">Manufacture Date</label>
+                                    <input type="date" name="manufacture_date" id="manufacture_date" value="{{ old('manufacture_date') }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;">
+                                    @error('manufacture_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="expiry_date" class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date</label>
+                                    <input type="date" name="expiry_date" id="expiry_date" value="{{ old('expiry_date') }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;">
+                                    @error('expiry_date')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="supplier" class="block text-sm font-semibold text-gray-700 mb-2">Supplier</label>
+                                    <input type="text" name="supplier" id="supplier" value="{{ old('supplier') }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                        placeholder="Supplier name">
+                                    @error('supplier')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="lot_number" class="block text-sm font-semibold text-gray-700 mb-2">Lot Number</label>
+                                    <input type="text" name="lot_number" id="lot_number" value="{{ old('lot_number') }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                        placeholder="Lot/Serial number">
+                                    @error('lot_number')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="md:col-span-2">
+                                    <label for="batch_notes" class="block text-sm font-semibold text-gray-700 mb-2">Batch Notes</label>
+                                    <textarea name="batch_notes" id="batch_notes" rows="2" 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-xl transition-colors duration-200" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                                        placeholder="Additional batch information">{{ old('batch_notes') }}</textarea>
+                                    @error('batch_notes')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
@@ -143,4 +281,6 @@
             </div>
         </div>
     </div>
+
+
 </x-app-layout>

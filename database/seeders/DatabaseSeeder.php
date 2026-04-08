@@ -15,25 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@iconvenue.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-            'department' => 'Management',
-            'is_active' => true,
-        ]);
-
-        // Create staff user
-        User::create([
-            'name' => 'Staff User',
-            'email' => 'staff@iconvenue.com',
-            'password' => bcrypt('password'),
-            'role' => 'staff',
-            'department' => 'Housekeeping',
-            'is_active' => true,
-        ]);
+        // Seed users and departments
+        $this->call(UserSeeder::class);
+        $this->call(DepartmentSeeder::class);
 
         // Create categories
         $categories = [
@@ -60,5 +44,8 @@ class DatabaseSeeder extends Seeder
         foreach ($items as $item) {
             \App\Models\Item::create($item);
         }
+
+        // Assign existing items to departments
+        $this->call(AssignItemsToDepartmentsSeeder::class);
     }
 }

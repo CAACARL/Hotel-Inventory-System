@@ -1,0 +1,256 @@
+<div class="modern-card bg-white overflow-hidden shadow-lg rounded-2xl">
+    <div class="p-3 sm:p-8 text-gray-900">
+
+        {{-- MOBILE CARD LAYOUT --}}
+        <div class="sm:hidden space-y-3">
+            @forelse($items as $item)
+            @php $userBorrowedQuantity = $item->getBorrowedQuantityByUser(auth()->id()); @endphp
+            <div class="border rounded-xl p-4 {{ $item->isLowStock() ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200 bg-white' }}">
+                {{-- Name + badges --}}
+                <div class="flex items-start justify-between gap-2 mb-3">
+                    <div class="flex items-start gap-2 min-w-0">
+                        @if($item->image)
+                            <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}" class="w-10 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0 mt-0.5 cursor-pointer hover:opacity-80 transition-opacity" onclick="openLightbox('{{ Storage::url($item->image) }}', '{{ addslashes($item->name) }}')">
+                        @else
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            </div>
+                        @endif
+                        <div class="min-w-0">
+                            <div class="font-bold text-gray-900 text-sm">{{ $item->name }}</div>
+                            <div class="text-xs text-gray-500 mt-0.5">{{ $item->category->getFullPath() }}</div>
+                            @if($item->department)
+                                <div class="text-xs text-gray-400">{{ $item->department->name }}</div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                        <span class="inline-flex px-2 py-0.5 text-xs font-bold rounded-full
+                            @switch($item->status)
+                                @case('available') bg-green-100 text-green-800 @break
+                                @case('in_use') bg-blue-100 text-blue-800 @break
+                                @case('damaged') bg-red-100 text-red-800 @break
+                                @case('disposed') bg-gray-100 text-gray-800 @break
+                                @case('spoiled') bg-yellow-100 text-yellow-800 @break
+                            @endswitch">
+                            {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                        </span>
+                        <span class="inline-flex px-2 py-0.5 text-xs font-bold rounded-full {{ $item->item_type === 'consumable' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800' }}">
+                            {{ $item->item_type === 'consumable' ? 'Consumable' : 'Non-Consumable' }}
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Stock row --}}
+                <div class="flex items-center justify-between text-xs text-gray-600 mb-3 bg-gray-50 rounded-lg px-3 py-2">
+                    <span>Stock: <span class="font-bold text-gray-900">{{ $item->quantity }} {{ $item->unit }}</span>
+                        @if($item->isLowStock()) <span class="text-red-500 font-medium">(Low)</span> @endif
+                    </span>
+                    @if($item->location)
+                        <span class="text-gray-400">{{ $item->location }}</span>
+                    @endif
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('items.show', $item) }}"
+                       class="inline-flex items-center px-3 py-1.5 text-blue-600 hover:bg-blue-50 text-xs font-medium rounded-lg border border-blue-200 transition-colors">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                        View
+                    </a>
+
+                    @if(auth()->user()->isAdmin())
+                        <button @click="selectedItem = {{ $item->toJson() }}; editModal = true; setTimeout(() => loadSubcategoriesForEdit({{ $item->toJson() }}), 100)"
+                                class="inline-flex items-center px-3 py-1.5 text-indigo-600 hover:bg-indigo-50 text-xs font-medium rounded-lg border border-indigo-200 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            Edit
+                        </button>
+                    @endif
+
+                    @if($item->quantity > 0 && $item->status === 'available')
+                        <button @click="selectedItem = {{ $item->toJson() }}; borrowModal = true"
+                                class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+                                style="color: #D4AF37; border-color: #D4AF37;">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Borrow
+                        </button>
+                    @endif
+
+                    @if($userBorrowedQuantity > 0)
+                        <button @click="selectedItem = { id: {{ $item->id }}, name: '{{ addslashes($item->name) }}', unit: '{{ $item->unit }}', quantity: {{ $item->quantity }}, borrowed_quantity: {{ $userBorrowedQuantity }} }; returnModal = true"
+                                class="inline-flex items-center px-3 py-1.5 text-green-600 hover:bg-green-50 text-xs font-medium rounded-lg border border-green-200 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                            Return
+                        </button>
+                    @endif
+
+                    @if(auth()->user()->isAdmin())
+                        <button @click="deleteItemId = {{ $item->id }}; deleteItemName = '{{ $item->name }}'; deleteModal = true"
+                                class="inline-flex items-center px-3 py-1.5 text-red-600 hover:bg-red-50 text-xs font-medium rounded-lg border border-red-200 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Delete
+                        </button>
+                    @endif
+                </div>
+            </div>
+            @empty
+            <div class="text-center py-12 text-gray-500">
+                <svg class="w-12 h-12 text-gray-400 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+                <p class="text-gray-500">Try adjusting your search or filter criteria</p>
+            </div>
+            @endforelse
+        </div>
+
+        {{-- DESKTOP TABLE LAYOUT --}}
+        <div class="hidden sm:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 z-10 bg-gray-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Name</th>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Category</th>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Department</th>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Stock</th>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Item Type</th>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Location</th>
+                        <th class="px-8 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    @forelse($items as $item)
+                    @php $userBorrowedQuantity = $item->getBorrowedQuantityByUser(auth()->id()); @endphp
+                    <tr class="hover:bg-gray-50 transition-colors duration-200 {{ $item->isLowStock() ? 'bg-yellow-50 border-l-4 border-yellow-400' : '' }}">
+                        <td class="px-8 py-6 whitespace-nowrap sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] {{ $item->isLowStock() ? 'bg-yellow-50' : 'bg-white' }}">
+                            <div class="flex items-center gap-3">
+                                @if($item->image)
+                                    <img src="{{ Storage::url($item->image) }}" alt="{{ $item->name }}" class="w-10 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onclick="openLightbox('{{ Storage::url($item->image) }}', '{{ addslashes($item->name) }}')">
+                                @else
+                                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                    </div>
+                                @endif
+                                <div>
+                                    <div class="text-sm font-bold text-gray-900">{{ $item->name }}</div>
+                                    <div class="text-sm text-gray-500">{{ Str::limit($item->description, 50) }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 font-medium">{{ $item->category->getFullPath() }}</div>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $item->department->name ?? 'Not assigned' }}</div>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap {{ $item->isLowStock() ? 'bg-yellow-50' : '' }}">
+                            <div class="text-sm font-bold text-gray-900">
+                                {{ $item->quantity }} {{ $item->unit }}
+                                @if($item->isLowStock())
+                                    <span class="text-red-500 text-xs font-medium">(Low Stock)</span>
+                                @endif
+                            </div>
+                            <div class="text-xs text-gray-500">Min: {{ $item->minimum_stock }}</div>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap">
+                            <span class="inline-flex px-3 py-1 text-xs font-bold rounded-full {{ $item->item_type === 'consumable' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800' }}">
+                                {{ $item->item_type === 'consumable' ? 'Consumable' : 'Non-Consumable' }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap">
+                            <span class="inline-flex px-3 py-1 text-xs font-bold rounded-full
+                                @switch($item->status)
+                                    @case('available') bg-green-100 text-green-800 @break
+                                    @case('in_use') bg-blue-100 text-blue-800 @break
+                                    @case('damaged') bg-red-100 text-red-800 @break
+                                    @case('disposed') bg-gray-100 text-gray-800 @break
+                                    @case('spoiled') bg-yellow-100 text-yellow-800 @break
+                                @endswitch">
+                                {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $item->location ?? 'Not specified' }}</div>
+                        </td>
+                        <td class="px-8 py-6 whitespace-nowrap text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <a href="{{ route('items.show', $item) }}"
+                                   class="inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-xs font-medium rounded transition-all duration-200">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    View
+                                </a>
+
+                                @if(auth()->user()->isAdmin())
+                                    <button @click="selectedItem = {{ $item->toJson() }}; editModal = true; setTimeout(() => loadSubcategoriesForEdit({{ $item->toJson() }}), 100)"
+                                            class="inline-flex items-center px-2 py-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 text-xs font-medium rounded transition-all duration-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        Edit
+                                    </button>
+                                @else
+                                    <button disabled class="inline-flex items-center px-2 py-1 text-gray-400 cursor-not-allowed text-xs font-medium rounded">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        Edit
+                                    </button>
+                                @endif
+
+                                @if($item->quantity > 0 && $item->status === 'available')
+                                    <button @click="selectedItem = {{ $item->toJson() }}; borrowModal = true"
+                                            class="inline-flex items-center px-2 py-1 hover:bg-amber-50 text-xs font-medium rounded transition-all duration-200"
+                                            style="color: #D4AF37;" onmouseover="this.style.color='#3D2914'" onmouseout="this.style.color='#D4AF37'">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                        Borrow
+                                    </button>
+                                @else
+                                    <button disabled class="inline-flex items-center px-2 py-1 text-gray-400 cursor-not-allowed text-xs font-medium rounded">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                                        Borrow
+                                    </button>
+                                @endif
+
+                                @if($userBorrowedQuantity > 0)
+                                    <button @click="selectedItem = { id: {{ $item->id }}, name: '{{ addslashes($item->name) }}', unit: '{{ $item->unit }}', quantity: {{ $item->quantity }}, borrowed_quantity: {{ $userBorrowedQuantity }} }; returnModal = true"
+                                            class="inline-flex items-center px-2 py-1 text-green-600 hover:text-green-800 hover:bg-green-50 text-xs font-medium rounded transition-all duration-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                        Return
+                                    </button>
+                                @else
+                                    <button disabled class="inline-flex items-center px-2 py-1 text-gray-400 cursor-not-allowed text-xs font-medium rounded">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 818 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                        Return
+                                    </button>
+                                @endif
+
+                                @if(auth()->user()->isAdmin())
+                                    <button @click="deleteItemId = {{ $item->id }}; deleteItemName = '{{ $item->name }}'; deleteModal = true"
+                                            class="inline-flex items-center px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 text-xs font-medium rounded transition-all duration-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        Delete
+                                    </button>
+                                @else
+                                    <button disabled class="inline-flex items-center px-2 py-1 text-gray-400 cursor-not-allowed text-xs font-medium rounded">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        Delete
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="8" class="px-8 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No items found</h3>
+                                <p class="text-gray-500">Try adjusting your search or filter criteria</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 sm:mt-6 px-0 sm:px-8 pb-4 sm:pb-8">
+            {{ $items->links() }}
+        </div>
+    </div>
+</div>

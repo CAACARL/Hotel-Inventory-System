@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background (optional, can be removed for transparent) -->
+  <rect width="400" height="600" fill="#3D2914"/>
+  
+  <!-- Main Logo Symbol -->
+  <g transform="translate(200, 180)" fill="none" stroke="#D4AF37" stroke-width="8">
+    <!-- Top Left Square -->
+    <rect x="-120" y="-80" width="60" height="60" rx="4"/>
+    <rect x="-110" y="-70" width="40" height="40" rx="2"/>
+    <rect x="-100" y="-60" width="20" height="20" rx="1"/>
+    
+    <!-- Top Right Square -->
+    <rect x="60" y="-80" width="60" height="60" rx="4"/>
+    <rect x="70" y="-70" width="40" height="40" rx="2"/>
+    <rect x="80" y="-60" width="20" height="20" rx="1"/>
+    
+    <!-- Center Vertical Lines -->
+    <rect x="-20" y="-80" width="40" height="200" rx="2"/>
+    <rect x="-10" y="-70" width="20" height="180" rx="1"/>
+    <rect x="-5" y="-60" width="10" height="160" rx="0.5"/>
+    
+    <!-- Bottom Left Square -->
+    <rect x="-120" y="60" width="60" height="60" rx="4"/>
+    <rect x="-110" y="70" width="40" height="40" rx="2"/>
+    <rect x="-100" y="80" width="20" height="20" rx="1"/>
+    
+    <!-- Bottom Right Square -->
+    <rect x="60" y="60" width="60" height="60" rx="4"/>
+    <rect x="70" y="70" width="40" height="40" rx="2"/>
+    <rect x="80" y="80" width="20" height="20" rx="1"/>
+  </g>
+  
+  <!-- Text -->
+  <g fill="#D4AF37">
+    <!-- ICON -->
+    <text x="200" y="420" text-anchor="middle" font-family="serif" font-size="72" font-weight="300" letter-spacing="8px">ICON</text>
+    
+    <!-- VENUE & SUITES -->
+    <text x="200" y="470" text-anchor="middle" font-family="serif" font-size="24" font-weight="300" letter-spacing="4px">VENUE &amp; SUITES</text>
+  </g>
+</svg>
