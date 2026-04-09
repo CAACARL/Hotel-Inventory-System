@@ -59,8 +59,10 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
         Route::post('/items/{item}/replenish', [ItemController::class, 'processReplenish'])->name('items.process-replenish');
         Route::post('/items/{item}/recovered', [ItemController::class, 'markRecovered'])->name('items.mark-recovered');
         Route::post('/items/{item}/disposal', [ItemController::class, 'markDisposal'])->name('items.mark-disposal');
-        Route::get('/borrowed-items', [ItemController::class, 'borrowedItems'])->name('items.borrowed');
     });
+
+    // Borrowed items — accessible by all authenticated users
+    Route::get('/borrowed-items', [ItemController::class, 'borrowedItems'])->name('items.borrowed');
     
     // Batch Management (Admin only)
     Route::middleware(['admin'])->group(function () {

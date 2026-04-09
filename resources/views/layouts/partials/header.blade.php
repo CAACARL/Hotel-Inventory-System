@@ -39,19 +39,29 @@
             },
             go(url) { this.searchOpen = false; this.query = ''; window.location.href = url; }
          }"
-         @keydown.window="if(event.key === '/' && !['INPUT','TEXTAREA'].includes(event.target.tagName)) { event.preventDefault(); searchOpen = true; $nextTick(() => $refs.searchInput.focus()); }"
-         @keydown.escape.window="searchOpen = false; query = ''"
-         class="w-full max-w-[220px] ml-6 mr-auto hidden sm:block relative">
+         @keydown.escape.window="if(searchOpen) { searchOpen = false; query = ''; }"
+         x-init="
+            window.addEventListener('pageshow', () => { searchOpen = false; query = ''; });
+         "
+         class="w-full max-w-[140px] sm:max-w-[220px] ml-6 mr-auto relative">
 
         <!-- Search trigger -->
-        <button @click="searchOpen = true; $nextTick(() => $refs.searchInput.focus())"
-                class="w-full flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-500 hover:border-amber-400 rounded-full text-gray-500 text-sm transition-all duration-200 shadow-sm group">
-            <svg class="w-4 h-4 flex-shrink-0 group-hover:text-amber-500 transition-colors text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-            <span class="flex-1 text-left text-gray-500 group-hover:text-gray-600 transition-colors">Search pages...</span>
-            <kbd class="hidden lg:inline-flex items-center px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-400 rounded-md text-gray-500 font-mono">/</kbd>
-        </button>
+        <div class="relative w-full">
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-500 hover:border-amber-400 rounded-full text-gray-500 text-sm transition-all duration-200 shadow-sm group">
+                <svg class="w-4 h-4 flex-shrink-0 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input x-ref="searchInput"
+                       x-model="query"
+                       @input="searchOpen = query.length > 0"
+                       @focus="if(query.length > 0) searchOpen = true"
+                       @keydown.escape.stop="searchOpen = false; query = ''; $el.blur()"
+                       type="text"
+                       placeholder="Search pages..."
+                       class="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-500 min-w-0">
+                <kbd class="hidden lg:inline-flex items-center px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-400 rounded-md text-gray-500 font-mono flex-shrink-0">/</kbd>
+            </div>
+        </div>
 
         <!-- Dropdown results -->
         <div x-show="searchOpen"
@@ -62,22 +72,8 @@
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
              @click.away="searchOpen = false; query = ''"
-             class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[99999] min-w-[280px]"
+             class="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[99999] min-w-[280px]"
              style="display:none;">
-
-            <div class="px-3 py-2 border-b border-gray-100" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-white opacity-70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <input x-ref="searchInput"
-                           x-model="query"
-                           type="text"
-                           placeholder="Search pages & actions..."
-                           class="flex-1 text-sm text-white placeholder-amber-200 bg-transparent outline-none py-1">
-                    <kbd @click="searchOpen = false; query = ''" class="text-xs text-amber-200 cursor-pointer hover:text-white bg-white bg-opacity-10 px-1.5 py-0.5 rounded">Esc</kbd>
-                </div>
-            </div>
 
             <div class="max-h-72 overflow-y-auto py-1">
                 <template x-if="filtered.length === 0">
@@ -128,8 +124,8 @@
                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                  x-transition:leave-end="opacity-0 scale-95 translate-y-1"
                  @click.away="bellOpen = false"
-                 class="fixed sm:absolute inset-x-4 sm:inset-x-auto top-16 sm:top-auto sm:right-0 sm:mt-2 w-auto sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[99999]"
-                 style="display:none;">
+                 class="fixed sm:absolute left-2 right-2 sm:left-auto sm:right-0 mt-2 sm:w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[99999]"
+                 style="display:none; top: auto;"
 
                 <!-- Header -->
                 <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">

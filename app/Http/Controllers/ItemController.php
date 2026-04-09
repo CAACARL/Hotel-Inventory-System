@@ -448,15 +448,19 @@ class ItemController extends Controller
     }
 
     /**
-     * Show currently borrowed items (Admin only)
+     * Show currently borrowed items — all for admin, own only for staff
      */
     public function borrowedItems()
     {
-        // Get all currently borrowed items from the borrowed_items table
-        $borrowedItems = BorrowedItem::with(['item.category', 'user'])
-            ->orderBy('borrowed_at', 'desc')
-            ->get()
-            ->map(function ($borrowedItem) {
+        $query = BorrowedItem::with(['item.category', 'user'])
+            ->orderBy('borrowed_at', 'desc');
+
+        // Staff only see their own borrowed items
+        if (!auth()->user()->isAdmin()) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $borrowedItems = $query->get()->map(function ($borrowedItem) {
                 return (object)[
                     'item' => $borrowedItem->item,
                     'user' => $borrowedItem->user,
@@ -468,7 +472,7 @@ class ItemController extends Controller
                     'reference_number' => $borrowedItem->reference_number,
                 ];
             });
-        
+
         return view('items.borrowed', compact('borrowedItems'));
     }
 

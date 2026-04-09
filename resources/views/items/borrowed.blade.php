@@ -13,7 +13,13 @@
                     </div>
                     <div>
                         <h1 class="text-2xl sm:text-4xl font-bold mb-1 text-amber-700">Borrowed Items</h1>
-                        <p class="text-gray-600 text-sm sm:text-lg font-medium hidden sm:block">Track all items currently borrowed by staff members</p>
+                        <p class="text-gray-600 text-sm sm:text-lg font-medium hidden sm:block">
+                            @if(auth()->user()->isAdmin())
+                                Track all items currently borrowed by staff members
+                            @else
+                                Items you currently have borrowed
+                            @endif
+                        </p>
                         <div class="flex items-center mt-1 sm:mt-3 text-sm text-gray-500">
                             <div class="w-2 h-2 bg-orange-500 rounded-full mr-2"></div>
                             <span class="font-medium">{{ $borrowedItems->count() }} Active Borrowings</span>
