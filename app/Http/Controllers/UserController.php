@@ -56,6 +56,13 @@ class UserController extends Controller
                 'is_active' => true,
             ]);
 
+            // Send welcome email with credentials
+            try {
+                \Mail::to($user->email)->send(new \App\Mail\WelcomeUser($user, $validated['password']));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send welcome email to ' . $user->email . ': ' . $e->getMessage());
+            }
+
             return redirect()->route('users.index')
                 ->with('success', 'User "' . $user->name . '" created successfully with email: ' . $user->email);
                 

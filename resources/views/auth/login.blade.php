@@ -89,7 +89,7 @@
 
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}" 
-                   class="text-sm font-medium hover:underline transition-colors duration-200" style="color: #D4AF37;" onmouseover="this.style.color='#3D2914'" onmouseout="this.style.color='#D4AF37'"
+                   class="text-sm font-medium hover:underline transition-colors duration-200" style="color: #D4AF37;" onmouseover="this.style.color='#3D2914'" onmouseout="this.style.color='#D4AF37'">
                     Forgot password?
                 </a>
             @endif
