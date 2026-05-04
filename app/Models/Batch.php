@@ -15,6 +15,12 @@ class Batch extends Model
         'item_id',
         'quantity',
         'unit_cost',
+        'purchase_price',
+        'purchase_date',
+        'depreciation_method',
+        'useful_life_years',
+        'salvage_value',
+        'depreciation_rate',
         'manufacture_date',
         'expiry_date',
         'supplier',
@@ -26,7 +32,11 @@ class Batch extends Model
     protected $casts = [
         'manufacture_date' => 'date',
         'expiry_date' => 'date',
-        'unit_cost' => 'decimal:2'
+        'purchase_date' => 'date',
+        'unit_cost' => 'decimal:2',
+        'purchase_price' => 'decimal:2',
+        'salvage_value' => 'decimal:2',
+        'depreciation_rate' => 'decimal:2',
     ];
 
     /**
@@ -112,25 +122,95 @@ class Batch extends Model
     }
 
     /**
+     * Check if this batch has depreciation configured
+     */
+    public function hasDepreciation(): bool
+    {
+        return $this->depreciation_method && $this->depreciation_method !== 'none'
+            && $this->purchase_price && $this->purchase_date && $this->useful_life_years;
+    }
+
+    /**
+     * Calculate accumulated depreciation for this batch
+     */
+    public function calculateDepreciation(): float
+    {
+        if (!$this->hasDepreciation()) return 0;
+
+        $yearsElapsed = $this->purchase_date->diffInYears(now());
+
+        if ($yearsElapsed >= $this->useful_life_years) {
+            return $this->purchase_price - ($this->salvage_value ?? 0);
+        }
+
+        return match($this->depreciation_method) {
+            'straight_line'    => $this->straightLineDepreciation($yearsElapsed),
+            'declining_balance' => $this->decliningBalanceDepreciation($yearsElapsed),
+            default            => 0,
+        };
+    }
+
+    private function straightLineDepreciation(float $yearsElapsed): float
+    {
+        $depreciable = $this->purchase_price - ($this->salvage_value ?? 0);
+        return ($depreciable / $this->useful_life_years) * $yearsElapsed;
+    }
+
+    private function decliningBalanceDepreciation(float $yearsElapsed): float
+    {
+        $rate = 2 / $this->useful_life_years;
+        $bookValue = $this->purchase_price;
+        $total = 0;
+
+        for ($year = 1; $year <= $yearsElapsed; $year++) {
+            $yearly = $bookValue * $rate;
+            $remaining = $this->purchase_price - ($this->salvage_value ?? 0) - $total;
+            if ($yearly > $remaining) $yearly = $remaining;
+            $total += $yearly;
+            $bookValue -= $yearly;
+            if ($total >= $this->purchase_price - ($this->salvage_value ?? 0)) break;
+        }
+
+        return $total;
+    }
+
+    /**
+     * Get current book value for this batch
+     */
+    public function getCurrentBookValue(): ?float
+    {
+        if (!$this->purchase_price) return null;
+        return max($this->purchase_price - $this->calculateDepreciation(), $this->salvage_value ?? 0);
+    }
+
+    /**
      * Mark batch as expired and deduct quantity from item (for consumables only)
      */
     public function markAsExpired()
     {
         if ($this->status === 'expired') {
-            return false; // Already expired
+            return false;
         }
 
         $item = $this->item;
 
-        // Mark batch as expired
         $this->update(['status' => 'expired']);
 
-        // Only deduct quantity for consumable items
         if ($item && $item->item_type === 'consumable') {
-            // Deduct the batch quantity from the item's total quantity
             $item->decrement('quantity', $this->quantity);
 
-            // Mark item as spoiled if quantity reaches 0 or below
+            // Log a spoiled transaction for audit trail
+            \App\Models\Transaction::create([
+                'item_id'          => $item->id,
+                'user_id'          => 1, // system action — use first admin
+                'type'             => 'out',
+                'transaction_type' => 'spoiled',
+                'quantity'         => $this->quantity,
+                'notes'            => 'Batch ' . $this->batch_number . ' expired — stock deducted automatically.',
+                'reference_number' => 'SPL-' . str_pad(\App\Models\Transaction::where('transaction_type', 'spoiled')->count() + 1, 3, '0', STR_PAD_LEFT),
+                'transaction_date' => now(),
+            ]);
+
             if ($item->quantity <= 0) {
                 $item->update(['status' => 'spoiled', 'quantity' => 0]);
             }

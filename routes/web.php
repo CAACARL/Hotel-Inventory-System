@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     
     // Categories (Admin only)
     Route::middleware(['admin'])->group(function () {
+        Route::get('/categories/archived', [CategoryController::class, 'archived'])->name('categories.archived');
+        Route::post('/categories/{id}/unarchive', [CategoryController::class, 'unarchive'])->name('categories.unarchive');
         Route::resource('categories', CategoryController::class);
         Route::post('/categories/{category}/subcategories', [CategoryController::class, 'storeSubcategory'])->name('categories.subcategories.store');
         Route::put('/subcategories/{subcategory}', [CategoryController::class, 'updateSubcategory'])->name('subcategories.update');
@@ -38,9 +40,11 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     // Departments (Admin only)
     Route::middleware(['admin'])->group(function () {
         Route::resource('departments', DepartmentController::class);
+        Route::post('/departments/{department}/toggle-active', [DepartmentController::class, 'toggleActive'])->name('departments.toggle-active');
     });
     
     // Items - Staff can view and borrow/return, Admin can manage
+    Route::get('/items/archived', [ItemController::class, 'archived'])->name('items.archived');
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
     Route::get('/items/{item}', [ItemController::class, 'show'])->name('items.show');
     Route::get('/items/{item}/borrow', [ItemController::class, 'borrow'])->name('items.borrow');
@@ -51,14 +55,13 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     
     // Items management (Admin only)
     Route::middleware(['admin'])->group(function () {
-        Route::get('/items/create', [ItemController::class, 'create'])->name('items.create');
         Route::post('/items', [ItemController::class, 'store'])->name('items.store');
         Route::get('/items/{item}/edit', [ItemController::class, 'edit'])->name('items.edit');
         Route::put('/items/{item}', [ItemController::class, 'update'])->name('items.update');
         Route::delete('/items/{item}', [ItemController::class, 'destroy'])->name('items.destroy');
         Route::post('/items/{item}/replenish', [ItemController::class, 'processReplenish'])->name('items.process-replenish');
-        Route::post('/items/{item}/recovered', [ItemController::class, 'markRecovered'])->name('items.mark-recovered');
         Route::post('/items/{item}/disposal', [ItemController::class, 'markDisposal'])->name('items.mark-disposal');
+        Route::post('/items/{id}/unarchive', [ItemController::class, 'unarchive'])->name('items.unarchive');
     });
 
     // Borrowed items — accessible by all authenticated users
@@ -66,7 +69,7 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     
     // Batch Management (Admin only)
     Route::middleware(['admin'])->group(function () {
-        Route::resource('batches', \App\Http\Controllers\BatchController::class);
+        Route::resource('batches', \App\Http\Controllers\BatchController::class)->except(['edit', 'update', 'create', 'destroy']);
         Route::post('/batches/{batch}/mark-expired', [\App\Http\Controllers\BatchController::class, 'markExpired'])->name('batches.mark-expired');
     });
     
@@ -84,6 +87,7 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     // Users (Admin only)
     Route::middleware(['admin'])->group(function () {
         Route::resource('users', UserController::class);
+        Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     });
 });
 

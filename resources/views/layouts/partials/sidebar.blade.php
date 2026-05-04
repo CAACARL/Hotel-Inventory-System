@@ -165,7 +165,7 @@
         </nav>
 
         <!-- Decorative bottom image -->
-        <div class="relative mt-auto overflow-hidden flex-shrink-0" style="height: 100px;">
+        <div class="relative mt-auto overflow-hidden flex-shrink-0" style="height: 120px;">
             <div class="absolute inset-x-0 top-0 h-12 z-10" style="background: linear-gradient(to bottom, rgba(61,41,20,0.95), transparent);"></div>
             <img src="{{ asset('images/buddy.jpg') }}" alt=""
                  class="w-full h-full object-cover object-center opacity-80"

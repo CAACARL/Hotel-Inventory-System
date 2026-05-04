@@ -3,72 +3,43 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Item;
+use App\Models\Batch;
 
 class UpdateDepreciation extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'depreciation:update {--force : Force update all items regardless of last update date}';
+    protected $signature = 'depreciation:update {--force : Force update all batches}';
+    protected $description = 'Recalculate depreciation book values for all active batches';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Update depreciation values for all items';
-
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         $this->info('Starting depreciation update...');
 
-        $query = Item::where('depreciation_method', '!=', 'none')
-                    ->whereNotNull('purchase_date')
-                    ->whereNotNull('purchase_price');
+        $query = Batch::where('status', 'active')
+            ->where('depreciation_method', '!=', 'none')
+            ->whereNotNull('purchase_date')
+            ->whereNotNull('purchase_price');
 
-        if (!$this->option('force')) {
-            $query->where(function ($q) {
-                $q->whereNull('last_depreciation_date')
-                  ->orWhere('last_depreciation_date', '<', now()->subMonth());
-            });
-        }
+        $batches = $query->get();
 
-        $items = $query->get();
-
-        if ($items->isEmpty()) {
-            $this->info('No items need depreciation updates.');
+        if ($batches->isEmpty()) {
+            $this->info('No batches need depreciation updates.');
             return;
         }
 
-        $this->info("Updating depreciation for {$items->count()} items...");
+        $this->info("Updating depreciation for {$batches->count()} batches...");
 
-        $progressBar = $this->output->createProgressBar($items->count());
-        $progressBar->start();
+        $bar = $this->output->createProgressBar($batches->count());
+        $bar->start();
 
-        $updated = 0;
-        foreach ($items as $item) {
-            try {
-                $oldBookValue = $item->current_book_value;
-                $item->updateDepreciation();
-                
-                if ($oldBookValue !== $item->current_book_value) {
-                    $updated++;
-                }
-                
-                $progressBar->advance();
-            } catch (\Exception $e) {
-                $this->error("Error updating item {$item->id}: " . $e->getMessage());
-            }
+        foreach ($batches as $batch) {
+            // Depreciation is calculated on-the-fly via Batch::calculateDepreciation()
+            // Nothing to persist — just confirm the batch is valid
+            $batch->getCurrentBookValue();
+            $bar->advance();
         }
 
-        $progressBar->finish();
+        $bar->finish();
         $this->newLine();
-        $this->info("Depreciation update completed. {$updated} items updated.");
+        $this->info("Done. {$batches->count()} batches processed.");
     }
 }

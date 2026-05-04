@@ -8,18 +8,23 @@ use App\Models\Subcategory;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Get root categories with their children recursively
-        $categories = Category::whereNull('parent_id')
-            ->with(['children' => function($query) {
-                $query->withCount('items')->with(['children' => function($subQuery) {
-                    $subQuery->withCount('items');
+        $query = Category::whereNull('parent_id')
+            ->with(['children' => function($q) {
+                $q->withCount('items')->with(['children' => function($sq) {
+                    $sq->withCount('items');
                 }]);
             }])
-            ->withCount('items')
-            ->paginate(10);
-        
+            ->withCount('items');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $categories = $query->paginate(10)->appends($request->query());
+
         return view('categories.index', compact('categories'));
     }
 
@@ -123,19 +128,35 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
-        // Count items in this category and all its descendants
         $totalItems = $this->countItemsRecursively($category);
-        
         if ($totalItems > 0) {
             return redirect()->route('categories.index')
-                ->with('warning', 'Cannot delete category "' . $category->name . '" because it has ' . $totalItems . ' items (including in subcategories). Please reassign or remove the items first.');
+                ->with('warning', 'Cannot archive "' . $category->name . '" — it has ' . $totalItems . ' items. Remove or reassign them first.');
+        }
+
+        if ($category->children()->count() > 0) {
+            return redirect()->route('categories.index')
+                ->with('warning', 'Cannot archive "' . $category->name . '" — it has subcategories. Archive or remove them first.');
         }
 
         $categoryName = $category->name;
-        $category->delete(); // This will cascade delete all children due to foreign key constraint
-
+        $category->delete();
         return redirect()->route('categories.index')
-            ->with('success', 'Category "' . $categoryName . '" and all its subcategories deleted successfully.');
+            ->with('success', 'Category "' . $categoryName . '" has been archived.');
+    }
+
+    public function archived()
+    {
+        $categories = Category::onlyTrashed()->latest('deleted_at')->paginate(15);
+        return view('categories.archived', compact('categories'));
+    }
+
+    public function unarchive(int $id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+        $category->restore();
+        return redirect()->route('categories.archived')
+            ->with('success', 'Category "' . $category->name . '" has been restored.');
     }
 
     /**

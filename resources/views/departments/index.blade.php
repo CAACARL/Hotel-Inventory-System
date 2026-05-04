@@ -101,6 +101,7 @@
     viewModal: false,
     editModal: false,
     deleteModal: false,
+    searchModal: false,
     selectedDepartment: null,
     deleteDepartmentId: null,
     deleteDepartmentName: ''
@@ -137,6 +138,24 @@
                 </div>
             </div>
 
+            <!-- Search Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 sm:mb-8">
+                <div class="flex flex-wrap gap-2">
+                    <button @click="searchModal = true" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #D4AF37; color: #3D2914;">
+                        <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Search Departments</span>
+                    </button>
+                </div>
+                @if(request('search'))
+                    <div class="text-sm text-gray-600 sm:ml-auto">
+                        Results for: <span class="font-semibold" style="color: #D4AF37;">"{{ request('search') }}"</span>
+                        <a href="{{ route('departments.index') }}" class="ml-2" style="color: #D4AF37;">Clear</a>
+                    </div>
+                @endif
+            </div>
+
             @include('departments.partials.table')
 
         </div>
@@ -144,6 +163,52 @@
         @include('departments.partials.create-modal')
         @include('departments.partials.edit-modal')
 
+    </div>
+
+    <!-- Search Modal -->
+    <div x-show="searchModal"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[60] overflow-y-auto" style="display: none;"
+         @keydown.escape="searchModal = false"
+         x-init="$watch('searchModal', value => { document.body.classList.toggle('modal-open', value) })">
+        <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="searchModal = false"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div x-show="searchModal"
+                 x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                 class="modal-container bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto relative z-10 border border-amber-200">
+                <div class="modal-header-gradient flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                    <div class="flex items-center">
+                        <div class="w-9 h-9 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3 backdrop-blur-sm">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Search Departments</h3>
+                            <p class="text-amber-100 text-xs">Find departments by name or location</p>
+                        </div>
+                    </div>
+                    <button @click="searchModal = false" class="text-white hover:text-amber-200 p-1.5 hover:bg-white hover:bg-opacity-10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form method="GET" action="{{ route('departments.index') }}" class="p-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Search Term</label>
+                        <input type="text" name="search" value="{{ request('search') }}" autofocus
+                               placeholder="Department name or location..."
+                               class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                        <button type="button" @click="searchModal = false" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium text-sm">Cancel</button>
+                        <button type="submit" class="animated-button px-6 py-2 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 text-sm" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                            <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </x-app-layout>
 </div>

@@ -20,7 +20,8 @@
             <div class="w-10 h-10 rounded-full flex items-center justify-center mr-4 
                 {{ $transaction->transaction_type === 'borrow' ? 'bg-orange-100 text-orange-600' : 
                    ($transaction->transaction_type === 'return' ? 'bg-green-100 text-green-600' : 
-                   ($transaction->transaction_type === 'delivery' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600')) }}">
+                   ($transaction->transaction_type === 'replenish' ? 'bg-blue-100 text-blue-600' : 
+                   ($transaction->transaction_type === 'disposal' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'))) }}">
                 @if($transaction->transaction_type === 'borrow')
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4"></path>
@@ -29,7 +30,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"></path>
                     </svg>
-                @elseif($transaction->transaction_type === 'delivery')
+                @elseif($transaction->transaction_type === 'replenish')
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>

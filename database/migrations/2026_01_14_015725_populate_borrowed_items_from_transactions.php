@@ -15,7 +15,8 @@ return new class extends Migration
     public function up(): void
     {
         // Populate borrowed_items table from existing transaction data
-        $items = Item::all();
+        // Use DB::table() to bypass Eloquent SoftDeletes scope — deleted_at column doesn't exist yet at this migration point
+        $items = \Illuminate\Support\Facades\DB::table('items')->get();
         
         foreach ($items as $item) {
             // Get all users who have borrowed this item

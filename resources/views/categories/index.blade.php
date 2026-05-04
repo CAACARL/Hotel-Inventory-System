@@ -3,6 +3,7 @@
     viewModal: false,
     editModal: false,
     deleteModal: false,
+    searchModal: false,
     selectedCategory: null,
     deleteCategoryId: null,
     deleteCategoryName: '',
@@ -103,6 +104,12 @@
                             style="border: 1px solid #6B7280; color: #374151;">
                         <span x-text="globalExpanded ? 'Collapse All' : 'Expand All'"></span>
                     </button>
+                    <a href="{{ route('categories.archived') }}" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #6B7280; color: #374151;">
+                        <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Archived</span>
+                    </a>
                     <button @click="createModal = true" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #D4AF37; color: #3D2914;">
                         <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -110,6 +117,24 @@
                         <span class="hidden sm:inline">Add New Category</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+                <div class="flex flex-wrap gap-2">
+                    <button @click="searchModal = true" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #D4AF37; color: #3D2914;">
+                        <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Search Categories</span>
+                    </button>
+                </div>
+                @if(request('search'))
+                    <div class="text-sm text-gray-600 sm:ml-auto">
+                        Results for: <span class="font-semibold" style="color: #D4AF37;">"{{ request('search') }}"</span>
+                        <a href="{{ route('categories.index') }}" class="ml-2" style="color: #D4AF37;">Clear</a>
+                    </div>
+                @endif
             </div>
 
             <!-- Recursive Categories Tree Layout -->
@@ -169,22 +194,22 @@
                      x-transition:leave="transition ease-in duration-200 transform"
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                     class="modal-container bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto border border-red-200 relative z-10">
+                     class="modal-container bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto border border-gray-300 relative z-10">
                     
                     <!-- Modern Modal Header with Gradient -->
-                    <div class="modal-header-gradient flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
+                    <div class="modal-header-gradient flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #374151 0%, #6B7280 100%);">
                         <div class="flex items-center">
                             <div class="w-9 h-9 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3 backdrop-blur-sm">
                                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-base font-bold text-white">Delete Category</h3>
-                                <p class="text-red-100 text-xs">This action cannot be undone</p>
+                                <h3 class="text-base font-bold text-white">Archive Category</h3>
+                                <p class="text-gray-200 text-xs">Category will be hidden from the list</p>
                             </div>
                         </div>
-                        <button @click="deleteModal = false" class="text-white hover:text-red-200 transition-colors duration-200 p-1.5 hover:bg-white hover:bg-opacity-10 rounded-lg">
+                        <button @click="deleteModal = false" class="text-white hover:text-gray-200 transition-colors duration-200 p-1.5 hover:bg-white hover:bg-opacity-10 rounded-lg">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -193,15 +218,15 @@
                     
                     <!-- Modal Body -->
                     <div class="p-4">
-                        <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-3 mb-4 border border-red-200">
+                        <div class="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-red-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                <svg class="w-5 h-5 text-gray-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
                                 </svg>
                                 <div>
-                                    <p class="text-xs font-semibold text-red-800">Are you sure you want to delete this category?</p>
-                                    <p class="text-xs text-red-700 mt-0.5">
-                                        <span class="font-medium" x-text="deleteCategoryName"></span> and all its subcategories will be permanently removed.
+                                    <p class="text-xs font-semibold text-gray-800">Archive this category?</p>
+                                    <p class="text-xs text-gray-600 mt-0.5">
+                                        <span class="font-medium" x-text="deleteCategoryName"></span> will be moved to the archive. You can view it under Archived Categories.
                                     </p>
                                 </div>
                             </div>
@@ -233,11 +258,11 @@
                                         form.submit();
                                     "
                                     class="animated-button px-5 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm" 
-                                    style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
+                                    style="background: linear-gradient(135deg, #374151 0%, #6B7280 100%);">
                                 <svg class="w-3 h-3 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
                                 </svg>
-                                Delete
+                                Archive
                             </button>
                         </div>
                     </div>
@@ -582,3 +607,50 @@
 
     </div>
 </x-app-layout>
+
+<!-- Search Modal -->
+<div x-show="searchModal"
+     x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+     class="fixed inset-0 z-[9999] overflow-y-auto" style="display: none;"
+     @keydown.escape="searchModal = false"
+     x-init="$watch('searchModal', value => { document.body.classList.toggle('modal-open', value) })">
+    <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="searchModal = false"></div>
+    <div class="flex items-center justify-center min-h-screen px-4 py-6">
+        <div x-show="searchModal"
+             x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+             class="modal-container bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto relative z-10 border border-amber-200">
+            <div class="modal-header-gradient flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                <div class="flex items-center">
+                    <div class="w-9 h-9 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3 backdrop-blur-sm">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Search Categories</h3>
+                        <p class="text-amber-100 text-xs">Find categories by name</p>
+                    </div>
+                </div>
+                <button @click="searchModal = false" class="text-white hover:text-amber-200 p-1.5 hover:bg-white hover:bg-opacity-10 rounded-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <form method="GET" action="{{ route('categories.index') }}" class="p-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Category Name</label>
+                    <input type="text" name="search" value="{{ request('search') }}" autofocus
+                           placeholder="Search by category name..."
+                           class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                </div>
+                <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                    <button type="button" @click="searchModal = false" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium text-sm">Cancel</button>
+                    <button type="submit" class="animated-button px-6 py-2 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 text-sm" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                        <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>

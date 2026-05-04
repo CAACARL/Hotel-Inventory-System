@@ -12,25 +12,14 @@ class DashboardController extends Controller
         $totalCategories = \App\Models\Category::where('is_active', true)->count();
         $lowStockItems = \App\Models\Item::lowStock()->count();
         
-        // Calculate total inventory value with depreciation
-        $totalInventoryValue = \App\Models\Item::whereNotNull('purchase_price')
-            ->get()
-            ->sum(function ($item) {
-                $currentValue = $item->getCurrentValue();
-                return $currentValue ? $currentValue * $item->quantity : 0;
-            });
-
-        // Add consumable batch values (unit_cost × quantity for active batches)
-        $consumableBatchValue = \App\Models\Batch::where('status', 'active')
+        // Calculate total inventory value via batches (depreciation is batch-level)
+        $totalInventoryValue = \App\Models\Batch::where('status', 'active')
             ->whereNotNull('unit_cost')
-            ->whereHas('item', fn($q) => $q->where('item_type', 'consumable'))
             ->get()
-            ->sum(fn($batch) => $batch->unit_cost * $batch->quantity);
-
-        $totalInventoryValue += $consumableBatchValue;
+            ->sum(fn($batch) => ($batch->getCurrentBookValue() ?? $batch->unit_cost) * $batch->quantity);
         
         // Filter recent transactions based on user role
-        $recentTransactionsQuery = \App\Models\Transaction::with(['item', 'user']);
+        $recentTransactionsQuery = \App\Models\Transaction::with(['item' => fn($q) => $q->withTrashed()->with('category'), 'user']);
         if (auth()->user()->isStaff()) {
             $recentTransactionsQuery->where('user_id', auth()->id());
         }

@@ -1,9 +1,20 @@
-{{-- 
-    FOOTER SETTINGS — edit these to resize:
-    Height:    change `py-4` (py-2 = smaller, py-6 = taller)
-    Text size: change `text-sm` (text-xs = smaller, text-base = larger)
---}}
-<footer class="py-6 px-4 sm:px-6 border-t border-gray-200 bg-white text-sm text-gray-700 font-bold flex flex-col sm:flex-row items-center justify-between gap-1 text-center sm:text-left">
-    <span>© {{ date('Y') }} Icon Venue & Suites. All rights reserved.</span>
-    <span>Inventory System</span>
+<footer class="bg-white">
+    <div class="py-2 px-6 flex flex-col items-center justify-center gap-1.5">
+        <!-- Brand label -->
+        <span class="text-xs font-bold tracking-widest uppercase text-gray-400">Inventory System</span>
+
+        <!-- Divider with diamonds -->
+        <div class="flex items-center gap-2">
+            <div class="h-px w-16" style="background: linear-gradient(90deg, transparent, #D4AF37);"></div>
+            <span style="color: #D4AF37; font-size: 8px;">◆</span>
+            <span style="color: #3D2914; font-size: 10px;">◆</span>
+            <span style="color: #D4AF37; font-size: 8px;">◆</span>
+            <div class="h-px w-16" style="background: linear-gradient(90deg, #D4AF37, transparent);"></div>
+        </div>
+
+        <!-- Copyright -->
+        <p class="text-xs text-gray-400 font-medium tracking-wide">
+            © {{ date('Y') }} <span class="font-bold text-gray-600">Icon Venue & Suites</span>. All rights reserved.
+        </p>
+    </div>
 </footer>

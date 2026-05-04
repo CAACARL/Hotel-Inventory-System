@@ -99,7 +99,8 @@
 </style>
 
 <div x-data="{ 
-    createModal: false
+    createModal: false,
+    searchModal: false
 }">
 <x-app-layout>
     <div class="py-4 sm:py-8">
@@ -146,30 +147,23 @@
             </div>
 
             <!-- Filter Buttons -->
-            <div class="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8">
-                    <a href="{{ route('batches.index') }}" 
-                        class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 {{ !request('status') && !request('expiry_filter') ? 'bg-amber-100 border-amber-300 text-amber-700' : 'bg-white border-gray-300 text-gray-700' }} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold border">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 sm:mb-8">
+                <div class="flex flex-wrap gap-2 sm:gap-4">
+                    <button @click="searchModal = true" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #D4AF37; color: #3D2914;">
                         <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
-                        <span class="hidden sm:inline">All Batches</span>
-                        <span class="sm:hidden">All</span>
-                    </a>
-                    <a href="{{ route('batches.index', ['expiry_filter' => 'expiring_soon']) }}" 
-                        class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 {{ request('expiry_filter') === 'expiring_soon' ? 'bg-yellow-100 border-yellow-300 text-yellow-700' : 'bg-white border-gray-300 text-gray-700' }} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold border">
-                        <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span class="hidden sm:inline">Expiring Soon</span>
-                        <span class="sm:hidden">Expiring</span>
-                    </a>
-                    <a href="{{ route('batches.index', ['expiry_filter' => 'expired']) }}" 
-                        class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 {{ request('expiry_filter') === 'expired' ? 'bg-red-100 border-red-300 text-red-700' : 'bg-white border-gray-300 text-gray-700' }} rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold border">
-                        <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                        Expired
-                    </a>
+                        <span class="hidden sm:inline">Search Batches</span>
+                    </button>
+                </div>
+                @if(request('search') || request('expiry_filter') || request('status'))
+                    <div class="text-sm text-gray-600 sm:ml-auto">
+                        @if(request('search'))
+                            Results for: <span class="font-semibold" style="color: #D4AF37;">"{{ request('search') }}"</span>
+                        @endif
+                        <a href="{{ route('batches.index') }}" class="ml-2" style="color: #D4AF37;">Clear</a>
+                    </div>
+                @endif
             </div>
 
             <div class="modern-card bg-white overflow-hidden shadow-lg rounded-2xl">
@@ -200,8 +194,7 @@
                                     @switch($batch->status)
                                         @case('active') bg-green-100 text-green-800 @break
                                         @case('expired') bg-red-100 text-red-800 @break
-                                        @case('recalled') bg-orange-100 text-orange-800 @break
-                                        @case('depleted') bg-gray-100 text-gray-800 @break
+                                        @default bg-gray-100 text-gray-800 @break
                                     @endswitch">
                                     {{ ucfirst($batch->status) }}
                                 </span>
@@ -319,8 +312,7 @@
                                             @switch($batch->status)
                                                 @case('active') bg-green-100 text-green-800 @break
                                                 @case('expired') bg-red-100 text-red-800 @break
-                                                @case('recalled') bg-orange-100 text-orange-800 @break
-                                                @case('depleted') bg-gray-100 text-gray-800 @break
+                                                @default bg-gray-100 text-gray-800 @break
                                             @endswitch">
                                             {{ ucfirst($batch->status) }}
                                         </span>
@@ -361,6 +353,71 @@
             </div>
 
             @include('batches.partials.create-modal')
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div x-show="searchModal"
+         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-[60] overflow-y-auto" style="display: none;"
+         @keydown.escape="searchModal = false"
+         x-init="$watch('searchModal', value => { document.body.classList.toggle('modal-open', value) })">
+        <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="searchModal = false"></div>
+        <div class="flex items-center justify-center min-h-screen px-4 py-6">
+            <div x-show="searchModal"
+                 x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 scale-95 translate-y-4" x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="opacity-100 scale-100 translate-y-0" x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                 class="modal-container bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto relative z-10 border border-amber-200">
+                <div class="modal-header-gradient flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                    <div class="flex items-center">
+                        <div class="w-9 h-9 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3 backdrop-blur-sm">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">Search Batches</h3>
+                            <p class="text-amber-100 text-xs">Find by batch number, item name, or supplier</p>
+                        </div>
+                    </div>
+                    <button @click="searchModal = false" class="text-white hover:text-amber-200 p-1.5 hover:bg-white hover:bg-opacity-10 rounded-lg">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <form method="GET" action="{{ route('batches.index') }}" class="p-4">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Search Term</label>
+                            <input type="text" name="search" value="{{ request('search') }}" autofocus
+                                   placeholder="Batch number, item name, supplier..."
+                                   class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Filter by Expiry</label>
+                            <select name="expiry_filter" class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                                <option value="">All Batches</option>
+                                <option value="expiring_soon" {{ request('expiry_filter') === 'expiring_soon' ? 'selected' : '' }}>Expiring Soon</option>
+                                <option value="expired" {{ request('expiry_filter') === 'expired' ? 'selected' : '' }}>Expired</option>
+                                <option value="valid" {{ request('expiry_filter') === 'valid' ? 'selected' : '' }}>Valid</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Filter by Status</label>
+                            <select name="status" class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                                <option value="">All Statuses</option>
+                                <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Active</option>
+                                <option value="expired" {{ request('status') === 'expired' ? 'selected' : '' }}>Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
+                        <button type="button" @click="searchModal = false" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl font-medium text-sm">Cancel</button>
+                        <button type="submit" class="animated-button px-6 py-2 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 text-sm" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                            <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Search Batches
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

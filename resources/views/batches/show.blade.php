@@ -65,7 +65,7 @@
 </style>
 
 <x-app-layout>
-    <div x-data="{ deleteModal: false }" class="py-4 sm:py-8">
+    <div x-data="{}" class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             
             <!-- Modern Page Header -->
@@ -97,8 +97,6 @@
                         @switch($batch->status)
                             @case('active') bg-green-100 text-green-800 @break
                             @case('expired') bg-red-100 text-red-800 @break
-                            @case('recalled') bg-orange-100 text-orange-800 @break
-                            @case('depleted') bg-gray-100 text-gray-800 @break
                             @default bg-gray-100 text-gray-800 @break
                         @endswitch">
                         @switch($batch->status)
@@ -110,11 +108,6 @@
                             @case('expired')
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                @break
-                            @case('recalled')
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                                 </svg>
                                 @break
                             @default
@@ -191,8 +184,7 @@
                                 @switch($batch->status)
                                     @case('active') bg-green-100 text-green-800 @break
                                     @case('expired') bg-red-100 text-red-800 @break
-                                    @case('recalled') bg-orange-100 text-orange-800 @break
-                                    @case('depleted') bg-gray-100 text-gray-800 @break
+                                    @default bg-gray-100 text-gray-800 @break
                                 @endswitch">
                                 {{ ucfirst($batch->status) }}
                             </span>
@@ -272,6 +264,50 @@
                 </div>
             </div>
 
+            <!-- Depreciation Card -->
+            @if($batch->hasDepreciation())
+            <div class="detail-card mb-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Depreciation
+                </h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-1">Method</p>
+                        <p class="text-sm font-bold text-gray-900">{{ ucfirst(str_replace('_', ' ', $batch->depreciation_method)) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-1">Purchase Price</p>
+                        <p class="text-sm font-bold text-gray-900">₱{{ number_format($batch->purchase_price, 2) }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-1">Purchase Date</p>
+                        <p class="text-sm font-bold text-gray-900">{{ $batch->purchase_date->format('M d, Y') }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-1">Useful Life</p>
+                        <p class="text-sm font-bold text-gray-900">{{ $batch->useful_life_years }} years</p>
+                    </div>
+                    @if($batch->salvage_value)
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-gray-500 mb-1">Salvage Value</p>
+                        <p class="text-sm font-bold text-gray-900">₱{{ number_format($batch->salvage_value, 2) }}</p>
+                    </div>
+                    @endif
+                    <div class="bg-indigo-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-indigo-600 mb-1">Accumulated Depreciation</p>
+                        <p class="text-sm font-bold text-indigo-900">₱{{ number_format($batch->calculateDepreciation(), 2) }}</p>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-4">
+                        <p class="text-xs font-semibold text-green-600 mb-1">Current Book Value</p>
+                        <p class="text-sm font-bold text-green-900">₱{{ number_format($batch->getCurrentBookValue(), 2) }}</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Notes Card -->
             @if($batch->notes)
             <div class="detail-card mb-8">
@@ -305,13 +341,6 @@
                     </div>
 
                     <div class="flex items-center space-x-4">
-                        <button @click="deleteModal = true" class="modern-button inline-flex items-center px-6 py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl" style="border: 1px solid #EF4444; color: #DC2626;" onmouseover="this.style.backgroundColor='#FEF2F2'" onmouseout="this.style.backgroundColor='white'">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            Delete Batch
-                        </button>
-                        
                         <div class="text-right">
                             <div class="text-sm text-gray-500 font-medium">Batch ID</div>
                             <div class="text-lg font-bold text-gray-900">#{{ $batch->id }}</div>
@@ -321,90 +350,5 @@
             </div>
         </div>
     
-
-    <!-- Delete Confirmation Modal -->
-    <div x-show="deleteModal"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[60] overflow-y-auto"
-         @keydown.escape="deleteModal = false"
-         style="display: none;"
-         x-init="$watch('deleteModal', value => { document.body.classList.toggle('modal-open', value) })">
-
-        <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="deleteModal = false"></div>
-
-        <div class="flex items-center justify-center min-h-screen px-4 py-6">
-            <div x-show="deleteModal"
-                 x-transition:enter="transition ease-out duration-300 transform"
-                 x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-200 transform"
-                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                 x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                 class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto border border-red-200 relative z-10">
-
-                <div class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
-                    <div class="flex items-center">
-                        <div class="w-9 h-9 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-base font-bold text-white">Delete Batch</h3>
-                            <p class="text-red-100 text-xs">This action cannot be undone</p>
-                        </div>
-                    </div>
-                    <button @click="deleteModal = false" class="text-white hover:text-red-200 p-1.5 hover:bg-white hover:bg-opacity-10 rounded-lg transition-colors duration-200">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-4">
-                    <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-3 mb-4 border border-red-200">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-red-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
-                            <div>
-                                <p class="text-xs font-semibold text-red-800">Are you sure you want to delete this batch?</p>
-                                <p class="text-xs text-red-700 mt-0.5">Batch <span class="font-medium">{{ $batch->batch_number }}</span> will be permanently removed.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button @click="deleteModal = false" class="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all duration-200 font-medium text-sm">
-                            Cancel
-                        </button>
-                        <button type="button"
-                                @click="
-                                    const form = document.createElement('form');
-                                    form.method = 'POST';
-                                    form.action = '{{ route('batches.destroy', $batch) }}';
-                                    const csrf = document.createElement('input');
-                                    csrf.type = 'hidden'; csrf.name = '_token'; csrf.value = '{{ csrf_token() }}';
-                                    const method = document.createElement('input');
-                                    method.type = 'hidden'; method.name = '_method'; method.value = 'DELETE';
-                                    form.appendChild(csrf); form.appendChild(method);
-                                    document.body.appendChild(form); form.submit();
-                                "
-                                class="animated-button px-5 py-2 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg text-sm" style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
-                            <svg class="w-3 h-3 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 </x-app-layout>

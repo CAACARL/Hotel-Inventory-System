@@ -11,9 +11,24 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('name')->paginate(15);
+        $query = User::orderBy('name');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('department', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        $users = $query->paginate(15)->appends($request->query());
         $departments = \App\Models\Department::where('is_active', true)->orderBy('name')->get();
         return view('users.index', compact('users', 'departments'));
     }
@@ -113,7 +128,6 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255',
             'role' => 'required|in:admin,staff',
             'department' => 'required|string|max:255',
-            'is_active' => 'boolean',
         ]);
 
         $updateData = [
@@ -121,7 +135,6 @@ class UserController extends Controller
             'email' => $request->email,
             'role' => $request->role,
             'department' => $request->department,
-            'is_active' => $request->has('is_active'),
         ];
 
         // Only update password if provided
@@ -153,5 +166,17 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index')
             ->with('success', 'User "' . $userName . '" deleted successfully.');
+    }
+
+    public function toggleActive(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->route('users.index')
+                ->with('warning', 'You cannot deactivate your own account.');
+        }
+        $user->update(['is_active' => !$user->is_active]);
+        $status = $user->is_active ? 'activated' : 'deactivated';
+        return redirect()->route('users.index')
+            ->with('success', 'User "' . $user->name . '" has been ' . $status . '.');
     }
 }

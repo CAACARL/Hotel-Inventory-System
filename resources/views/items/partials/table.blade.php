@@ -29,7 +29,6 @@
                             @switch($item->status)
                                 @case('available') bg-green-100 text-green-800 @break
                                 @case('in_use') bg-blue-100 text-blue-800 @break
-                                @case('damaged') bg-red-100 text-red-800 @break
                                 @case('disposed') bg-gray-100 text-gray-800 @break
                                 @case('spoiled') bg-yellow-100 text-yellow-800 @break
                             @endswitch">
@@ -86,9 +85,9 @@
 
                     @if(auth()->user()->isAdmin())
                         <button @click="deleteItemId = {{ $item->id }}; deleteItemName = '{{ $item->name }}'; deleteModal = true"
-                                class="inline-flex items-center px-3 py-1.5 text-red-600 hover:bg-red-50 text-xs font-medium rounded-lg border border-red-200 transition-colors">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            Delete
+                                class="inline-flex items-center px-3 py-1.5 text-gray-600 hover:bg-gray-100 text-xs font-medium rounded-lg border border-gray-300 transition-colors">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path></svg>
+                            Archive
                         </button>
                     @endif
                 </div>
@@ -161,7 +160,6 @@
                                 @switch($item->status)
                                     @case('available') bg-green-100 text-green-800 @break
                                     @case('in_use') bg-blue-100 text-blue-800 @break
-                                    @case('damaged') bg-red-100 text-red-800 @break
                                     @case('disposed') bg-gray-100 text-gray-800 @break
                                     @case('spoiled') bg-yellow-100 text-yellow-800 @break
                                 @endswitch">
@@ -221,14 +219,9 @@
 
                                 @if(auth()->user()->isAdmin())
                                     <button @click="deleteItemId = {{ $item->id }}; deleteItemName = '{{ $item->name }}'; deleteModal = true"
-                                            class="inline-flex items-center px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 text-xs font-medium rounded transition-all duration-200">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        Delete
-                                    </button>
-                                @else
-                                    <button disabled class="inline-flex items-center px-2 py-1 text-gray-400 cursor-not-allowed text-xs font-medium rounded">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        Delete
+                                            class="inline-flex items-center px-2 py-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-xs font-medium rounded transition-all duration-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path></svg>
+                                        Archive
                                     </button>
                                 @endif
                             </div>

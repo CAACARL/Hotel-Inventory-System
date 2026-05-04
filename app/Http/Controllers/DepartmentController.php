@@ -10,9 +10,20 @@ class DepartmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Department::withCount('items')->orderBy('name')->paginate(15);
+        $query = Department::withCount('items')->orderBy('name');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
+        $departments = $query->paginate(15)->appends($request->query());
         return view('departments.index', compact('departments'));
     }
 
@@ -67,11 +78,9 @@ class DepartmentController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'location' => 'nullable|string|max:255',
-            'is_active' => 'boolean',
         ]);
 
-        $updateData = $request->all();
-        $updateData['is_active'] = $request->has('is_active');
+        $updateData = $request->only(['name', 'description', 'location']);
 
         $department->update($updateData);
 
@@ -82,9 +91,15 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    public function toggleActive(Department $department)
+    {
+        $department->update(['is_active' => !$department->is_active]);
+        $status = $department->is_active ? 'activated' : 'deactivated';
+        return redirect()->route('departments.index')
+            ->with('success', 'Department "' . $department->name . '" has been ' . $status . '.');
+    }
     public function destroy(Department $department)
     {
-        // Check if department has items
         if ($department->items()->count() > 0) {
             return redirect()->route('departments.index')
                 ->with('warning', 'Cannot delete department "' . $department->name . '" because it has ' . $department->items()->count() . ' items. Please reassign the items to another department first.');

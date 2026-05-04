@@ -86,16 +86,6 @@
                                    class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-gray-400 text-sm" 
                                    placeholder="Department location">
                         </div>
-                        
-                        <div class="flex items-center">
-                            <input type="hidden" name="is_active" value="0">
-                            <input type="checkbox" 
-                                   id="edit_is_active" 
-                                   name="is_active" 
-                                   value="1"
-                                   class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 transition-colors duration-200">
-                            <label for="edit_is_active" class="ml-3 text-xs font-semibold text-gray-700">Department is active</label>
-                        </div>
                     </div>
                     
                     <!-- Modern Modal Footer -->

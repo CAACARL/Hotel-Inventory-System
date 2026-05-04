@@ -11,17 +11,32 @@ class TransactionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $query = Transaction::with(['item.category', 'user']);
+        $query = Transaction::with(['item' => function ($q) {
+            $q->withTrashed()->with('category');
+        }, 'user']);
 
-        // If user is staff, only show their own transactions
         if (auth()->user()->isStaff()) {
             $query->where('user_id', auth()->id());
         }
 
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('item', fn($i) => $i->where('name', 'like', "%{$search}%"))
+                  ->orWhere('reference_number', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('transaction_type', $request->type);
+        }
+
         $transactions = $query->orderBy('transaction_date', 'desc')
-            ->paginate(15);
+            ->paginate(15)
+            ->appends($request->query());
 
         return view('transactions.index', compact('transactions'));
     }
@@ -36,7 +51,9 @@ class TransactionController extends Controller
             abort(403, 'You can only view your own transactions.');
         }
 
-        $transaction->load(['item.category', 'user']);
+        $transaction->load(['item' => function ($q) {
+            $q->withTrashed()->with('category');
+        }, 'user']);
         return view('transactions.show', compact('transaction'));
     }
 
@@ -48,16 +65,19 @@ class TransactionController extends Controller
         $totalTransactions = Transaction::count();
         $totalItems = Item::count();
 
-        $totalValue = Item::whereNotNull('purchase_price')
+        // Sum current book value across all active batches that have depreciation set
+        $totalValue = \App\Models\Batch::where('status', 'active')
+            ->whereNotNull('purchase_price')
             ->get()
-            ->sum(function ($item) {
-                $currentValue = $item->getCurrentValue();
-                return $currentValue ? $currentValue * $item->quantity : 0;
-            });
+            ->sum(fn($batch) => ($batch->getCurrentBookValue() ?? 0) * $batch->quantity)
+            // Add items with unit_price but no batch depreciation
+            + Item::whereNotNull('unit_price')
+                ->get()
+                ->sum(fn($item) => $item->unit_price * $item->quantity);
 
         $lowStockItems = Item::lowStock()->count();
 
-        $recentTransactions = Transaction::with(['item.category', 'user'])
+        $recentTransactions = Transaction::with(['item' => fn($q) => $q->withTrashed()->with('category'), 'user'])
             ->orderBy('transaction_date', 'desc')
             ->limit(10)
             ->get();

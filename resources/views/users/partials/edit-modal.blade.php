@@ -50,7 +50,6 @@
                             $el.querySelector('#edit_email').value = selectedUser.email || '';
                             $el.querySelector('#edit_role').value = selectedUser.role || '';
                             $el.querySelector('#edit_department').value = selectedUser.department || '';
-                            $el.querySelector('#edit_is_active').checked = selectedUser.is_active;
                         })
                       ">
                     @csrf
@@ -117,16 +116,6 @@
                                     </option>
                                 @endforeach
                             </select>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input type="hidden" name="is_active" value="0">
-                            <input type="checkbox" 
-                                   id="edit_is_active" 
-                                   name="is_active" 
-                                   value="1"
-                                   class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 transition-colors duration-200">
-                            <label for="edit_is_active" class="ml-3 text-xs font-medium text-gray-700">User is active</label>
                         </div>
                     </div>
                     

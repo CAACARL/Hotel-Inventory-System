@@ -89,10 +89,7 @@ class TransactionExportController extends Controller
             ]);
             fputcsv($file, [
                 $this->createWideColumn('💰 Total Inventory Value', 60),
-                $this->createWideColumn('💵 PHP ' . number_format(Item::whereNotNull('purchase_price')->get()->sum(function ($item) {
-                    $currentValue = $item->getCurrentValue();
-                    return $currentValue ? $currentValue * $item->quantity : 0;
-                }), 2), 40),
+                $this->createWideColumn('💵 PHP ' . number_format(\App\Models\Batch::where('status', 'active')->whereNotNull('unit_cost')->get()->sum(fn($b) => ($b->getCurrentBookValue() ?? $b->unit_cost) * $b->quantity), 2), 40),
                 $this->createWideColumn('🟢 Tracked', 35)
             ]);
             fputcsv($file, [
@@ -187,7 +184,7 @@ class TransactionExportController extends Controller
                 $this->createWideColumn('🔢 Qty', 15)
             ]);
 
-            $recentTransactions = Transaction::with(['item.category', 'user'])
+            $recentTransactions = Transaction::with(['item' => fn($q) => $q->withTrashed()->with('category'), 'user'])
                 ->when($dateFrom, fn($q) => $q->whereDate('transaction_date', '>=', $dateFrom))
                 ->when($dateTo, fn($q) => $q->whereDate('transaction_date', '<=', $dateTo))
                 ->orderBy('transaction_date', 'desc')
@@ -229,7 +226,7 @@ class TransactionExportController extends Controller
                 $this->createWideColumn('🔖 Ref#', 30)
             ]);
 
-            $allTransactions = Transaction::with(['item.category', 'user'])
+            $allTransactions = Transaction::with(['item' => fn($q) => $q->withTrashed()->with('category'), 'user'])
                 ->when($dateFrom, fn($q) => $q->whereDate('transaction_date', '>=', $dateFrom))
                 ->when($dateTo, fn($q) => $q->whereDate('transaction_date', '<=', $dateTo))
                 ->orderBy('transaction_date', 'desc')->get();
@@ -257,10 +254,7 @@ class TransactionExportController extends Controller
             // COMPLETE INVENTORY SECTION
             fputcsv($file, [$this->createWideColumn('📦 COMPLETE INVENTORY LISTING', 120)]);
             fputcsv($file, [$this->createWideColumn('📊 All Items with Stock Status & Valuation', 100)]);
-            fputcsv($file, [$this->createWideColumn('💰 Total Value: PHP ' . number_format(Item::whereNotNull('purchase_price')->get()->sum(function ($item) {
-                $currentValue = $item->getCurrentValue();
-                return $currentValue ? $currentValue * $item->quantity : 0;
-            }), 2), 100)]);
+            fputcsv($file, [$this->createWideColumn('💰 Total Value: PHP ' . number_format(\App\Models\Batch::where('status', 'active')->whereNotNull('unit_cost')->get()->sum(fn($b) => ($b->getCurrentBookValue() ?? $b->unit_cost) * $b->quantity), 2), 100)]);
             fputcsv($file, [$this->createWideColumn('', 180)]);
 
             fputcsv($file, [
@@ -276,7 +270,7 @@ class TransactionExportController extends Controller
                 $this->createWideColumn('🎯 Health', 35)
             ]);
 
-            $allItems = Item::with('category')->orderBy('name')->get();
+            $allItems = Item::with(['category', 'batch'])->orderBy('name')->get();
 
             foreach ($allItems as $item) {
                 $stockHealth = '🟢 Healthy';
@@ -286,9 +280,9 @@ class TransactionExportController extends Controller
                     $stockHealth = '🟡 LOW STOCK';
                 }
 
-                $currentValue = $item->getCurrentValue();
-                $itemValue = $currentValue ? $currentValue * $item->quantity : 0;
-                $unitPrice = $currentValue ?: $item->unit_price;
+                $batchValue = $item->batch ? ($item->batch->getCurrentBookValue() ?? $item->batch->unit_cost) : null;
+                $unitPrice = $batchValue ?? $item->unit_price ?? 0;
+                $itemValue = $unitPrice * $item->quantity;
 
                 fputcsv($file, [
                     $this->createWideColumn($item->name, 70),
@@ -410,7 +404,7 @@ class TransactionExportController extends Controller
                 $this->createWideColumn('🔖 Ref#', 25)
             ]);
 
-            $transactions = Transaction::with(['item.category', 'user'])
+            $transactions = Transaction::with(['item' => fn($q) => $q->withTrashed()->with('category'), 'user'])
                 ->when($dateFrom, fn($q) => $q->whereDate('transaction_date', '>=', $dateFrom))
                 ->when($dateTo, fn($q) => $q->whereDate('transaction_date', '<=', $dateTo))
                 ->orderBy('transaction_date', 'desc')->get();
@@ -461,10 +455,7 @@ class TransactionExportController extends Controller
             fputcsv($file, [$this->createWideColumn('📦 INVENTORY REPORT - PROFESSIONAL EDITION', 150)]);
             fputcsv($file, [$this->createWideColumn('📅 Generated: ' . date('F j, Y \a\t g:i A'), 100)]);
             fputcsv($file, [$this->createWideColumn('📊 Total Items: ' . number_format(Item::count()), 80)]);
-            fputcsv($file, [$this->createWideColumn('💰 Total Value: PHP ' . number_format(Item::whereNotNull('purchase_price')->get()->sum(function ($item) {
-                $currentValue = $item->getCurrentValue();
-                return $currentValue ? $currentValue * $item->quantity : 0;
-            }), 2), 100)]);
+            fputcsv($file, [$this->createWideColumn('💰 Total Value: PHP ' . number_format(\App\Models\Batch::where('status', 'active')->whereNotNull('unit_cost')->get()->sum(fn($b) => ($b->getCurrentBookValue() ?? $b->unit_cost) * $b->quantity), 2), 100)]);
             fputcsv($file, [$this->createWideColumn('', 180)]);
             fputcsv($file, [$this->createWideColumn(str_repeat('═', 180), 180)]);
             fputcsv($file, [$this->createWideColumn('', 180)]);
@@ -482,7 +473,7 @@ class TransactionExportController extends Controller
                 $this->createWideColumn('🎯 Health', 35)
             ]);
 
-            $items = Item::with(['category'])->orderBy('name')->get();
+            $items = Item::with(['category', 'batch'])->orderBy('name')->get();
 
             foreach ($items as $item) {
                 $stockHealth = '🟢 Healthy';
@@ -492,9 +483,9 @@ class TransactionExportController extends Controller
                     $stockHealth = '🟡 LOW STOCK';
                 }
 
-                $currentValue = $item->getCurrentValue();
-                $itemValue = $currentValue ? $currentValue * $item->quantity : 0;
-                $unitPrice = $currentValue ?: $item->unit_price;
+                $batchValue = $item->batch ? ($item->batch->getCurrentBookValue() ?? $item->batch->unit_cost) : null;
+                $unitPrice = $batchValue ?? $item->unit_price ?? 0;
+                $itemValue = $unitPrice * $item->quantity;
 
                 fputcsv($file, [
                     $this->createWideColumn($item->name, 70),

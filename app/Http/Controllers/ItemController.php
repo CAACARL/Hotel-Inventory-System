@@ -79,7 +79,7 @@ class ItemController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'department_id' => 'nullable|exists:departments,id',
-            'status' => 'required|in:available,in_use,damaged,disposed,spoiled',
+            'status' => 'required|in:available,in_use,disposed,spoiled',
             'item_type' => 'required|in:consumable,non-consumable',
             'location' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -91,7 +91,7 @@ class ItemController extends Controller
             ]);
             $itemData['quantity'] = 0;
             $itemData['minimum_stock'] = 0;
-            $itemData['unit'] = 'pcs';
+            $itemData['unit'] = $request->input('unit', 'pcs');
 
             if ($request->hasFile('image')) {
                 $itemData['image'] = $request->file('image')->store('item-images', 'public');
@@ -126,6 +126,7 @@ class ItemController extends Controller
 
     public function update(Request $request, Item $item)
     {
+        if ($item->trashed()) abort(403, 'This item is archived.');
         // Check for potential duplicate items (same name, category, and department, excluding current item)
         $existingItem = Item::where('name', $request->name)
             ->where('category_id', $request->category_id)
@@ -146,14 +147,14 @@ class ItemController extends Controller
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
             'department_id' => 'nullable|exists:departments,id',
-            'status' => 'required|in:available,in_use,damaged,disposed,spoiled',
+            'status' => 'required|in:available,in_use,disposed,spoiled',
             'item_type' => 'required|in:consumable,non-consumable',
             'location' => 'nullable|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // Don't update quantity, minimum_stock, unit, or unit_price - these are managed through batches
-        $updateData = $request->only(['name', 'description', 'category_id', 'department_id', 'status', 'item_type', 'location']);
+        // Don't update quantity, minimum_stock, or unit_price - these are managed through batches
+        $updateData = $request->only(['name', 'description', 'category_id', 'department_id', 'status', 'item_type', 'location', 'unit']);
 
         if ($request->hasFile('image')) {
             // Delete old image if exists
@@ -171,10 +172,34 @@ class ItemController extends Controller
 
     public function destroy(Item $item)
     {
+        if ($item->quantity > 0) {
+            return redirect()->route('items.index')
+                ->with('warning', 'Cannot archive "' . $item->name . '" — it still has ' . $item->quantity . ' ' . $item->unit . ' in stock. Deplete the stock first.');
+        }
+
+        if ($item->borrowed_quantity > 0) {
+            return redirect()->route('items.index')
+                ->with('warning', 'Cannot archive "' . $item->name . '" — ' . $item->borrowed_quantity . ' ' . $item->unit . ' are currently borrowed. Wait for them to be returned first.');
+        }
+
         $itemName = $item->name;
         $item->delete();
         return redirect()->route('items.index')
-            ->with('success', 'Item "' . $itemName . '" deleted successfully.');
+            ->with('success', 'Item "' . $itemName . '" has been archived.');
+    }
+
+    public function archived()
+    {
+        $items = Item::onlyTrashed()->with(['category', 'department'])->latest('deleted_at')->paginate(15);
+        return view('items.archived', compact('items'));
+    }
+
+    public function unarchive(int $id)
+    {
+        $item = Item::onlyTrashed()->findOrFail($id);
+        $item->restore();
+        return redirect()->route('items.archived')
+            ->with('success', 'Item "' . $item->name . '" has been restored to inventory.');
     }
 
     public function borrow(Item $item)
@@ -184,6 +209,7 @@ class ItemController extends Controller
 
     public function processBorrow(Request $request, Item $item)
     {
+        if ($item->trashed()) abort(403, 'This item is archived.');
         $request->validate([
             'quantity' => 'required|integer|min:1|max:' . $item->quantity,
             'notes' => 'nullable|string',
@@ -230,7 +256,11 @@ class ItemController extends Controller
         // Update item quantity
         $item->decrement('quantity', $request->quantity);
 
-        // Notify admins of new borrow (exclude the borrower if they are admin)
+        // If all stock is now borrowed, mark as in_use
+        $item->refresh();
+        if ($item->quantity <= 0 && $item->status === 'available') {
+            $item->update(['status' => 'in_use']);
+        }
         \App\Models\Notification::notifyAdmins(
             'new_borrow',
             'New Borrow: ' . $item->name,
@@ -261,6 +291,7 @@ class ItemController extends Controller
      */
     public function processReplenish(Request $request, Item $item)
     {
+        if ($item->trashed()) abort(403, 'This item is archived.');
         $request->validate([
             'quantity' => 'required|integer|min:1',
             'notes' => 'nullable|string',
@@ -281,8 +312,9 @@ class ItemController extends Controller
         // Update item quantity
         $item->increment('quantity', $request->quantity);
 
-        // If item was out of stock, mark as available
-        if ($item->status === 'disposed' && $item->quantity > 0) {
+        // If item was disposed or spoiled, mark as available now that stock is back
+        $item->refresh();
+        if (in_array($item->status, ['disposed', 'spoiled']) && $item->quantity > 0) {
             $item->update(['status' => 'available']);
         }
 
@@ -291,42 +323,11 @@ class ItemController extends Controller
     }
 
     /**
-     * Mark item as recovered (from damaged status)
-     */
-    public function markRecovered(Request $request, Item $item)
-    {
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'notes' => 'nullable|string',
-        ]);
-
-        // Create recovered transaction
-        Transaction::create([
-            'item_id' => $item->id,
-            'user_id' => auth()->id(),
-            'type' => 'in',
-            'transaction_type' => 'recovered',
-            'quantity' => $request->quantity,
-            'notes' => $request->notes,
-            'reference_number' => 'REC-' . str_pad(Transaction::where('transaction_type', 'recovered')->count() + 1, 3, '0', STR_PAD_LEFT),
-            'transaction_date' => now(),
-        ]);
-
-        // Update item quantity and status
-        $item->increment('quantity', $request->quantity);
-        if ($item->status === 'damaged') {
-            $item->update(['status' => 'available']);
-        }
-
-        return redirect()->route('items.index')
-            ->with('success', 'Item marked as recovered successfully.');
-    }
-
-    /**
      * Mark item for disposal
      */
     public function markDisposal(Request $request, Item $item)
     {
+        if ($item->trashed()) abort(403, 'This item is archived.');
         $request->validate([
             'quantity' => 'required|integer|min:1|max:' . $item->quantity,
             'notes' => 'required|string',
@@ -346,10 +347,16 @@ class ItemController extends Controller
 
         // Update item quantity
         $item->decrement('quantity', $request->quantity);
-        
-        // If all quantity disposed, mark as disposed
-        if ($item->quantity == 0) {
-            $item->update(['status' => 'disposed']);
+
+        // If quantity hits 0 and nothing is borrowed, mark as disposed
+        // If quantity hits 0 but items are still borrowed, mark as in_use
+        $item->refresh();
+        $borrowedCount = \App\Models\BorrowedItem::where('item_id', $item->id)->sum('quantity');
+        if ($item->quantity <= 0) {
+            $item->update([
+                'status'   => $borrowedCount > 0 ? 'in_use' : 'disposed',
+                'quantity' => 0,
+            ]);
         }
 
         return redirect()->route('items.index')
@@ -413,7 +420,15 @@ class ItemController extends Controller
         // Update item quantity
         $item->increment('quantity', $request->quantity);
 
-        // Notify admins of return (exclude the returner if they are admin)
+        // If item was in_use (all borrowed), mark back as available now that stock returned
+        $item->refresh();
+        if ($item->status === 'in_use' && $item->quantity > 0) {
+            $item->update(['status' => 'available']);
+        }
+        // If was in_use with 0 quantity (all disposed+borrowed), now that borrowed returned check if fully disposed
+        if ($item->status === 'in_use' && $item->quantity <= 0) {
+            $item->update(['status' => 'disposed']);
+        }
         \App\Models\Notification::notifyAdmins(
             'item_returned',
             'Item Returned: ' . $item->name,

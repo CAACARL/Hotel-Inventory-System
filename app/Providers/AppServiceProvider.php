@@ -48,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
             ->whereNotNull('expiry_date')
             ->where('expiry_date', '>', now())
             ->where('expiry_date', '<=', now()->addDays(30))
+            ->whereHas('item')
             ->with('item')
             ->each(function ($batch) {
                 Notification::notifyAdmins(
@@ -63,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
         Batch::where('status', 'active')
             ->whereNotNull('expiry_date')
             ->where('expiry_date', '<', now())
+            ->whereHas('item')
             ->with('item')
             ->each(function ($batch) {
                 Notification::notifyAdmins(
@@ -81,6 +83,7 @@ class AppServiceProvider extends ServiceProvider
     private function syncStaffBorrowedNotifications($user): void
     {
         BorrowedItem::where('user_id', $user->id)
+            ->whereHas('item')
             ->with('item')
             ->each(function ($borrowed) use ($user) {
                 $exists = Notification::where('user_id', $user->id)

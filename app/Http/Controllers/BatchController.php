@@ -18,7 +18,7 @@ class BatchController extends Controller
         // Automatically process expired consumable batches
         $this->processExpiredConsumables();
 
-        $query = Batch::with(['item.category']);
+        $query = Batch::with(['item' => fn($q) => $q->withTrashed()->with('category')]);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -100,36 +100,35 @@ class BatchController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // Create batch
+            // Create batch with depreciation fields
             $batch = Batch::create([
-                'batch_number' => Batch::generateBatchNumber(),
-                'item_id' => $request->item_id,
-                'quantity' => $request->quantity,
-                'unit_cost' => $request->unit_cost,
-                'manufacture_date' => $request->manufacture_date,
-                'expiry_date' => $request->expiry_date,
-                'supplier' => $request->supplier,
-                'lot_number' => $request->lot_number,
-                'notes' => $request->notes,
+                'batch_number'       => Batch::generateBatchNumber(),
+                'item_id'            => $request->item_id,
+                'quantity'           => $request->quantity,
+                'unit_cost'          => $request->unit_cost,
+                'purchase_price'     => $request->unit_cost,
+                'purchase_date'      => now()->toDateString(),
+                'depreciation_method'=> $request->depreciation_method ?? 'none',
+                'useful_life_years'  => $request->useful_life_years,
+                'salvage_value'      => $request->salvage_value,
+                'depreciation_rate'  => $request->depreciation_rate,
+                'manufacture_date'   => $request->manufacture_date,
+                'expiry_date'        => $request->expiry_date,
+                'supplier'           => $request->supplier,
+                'lot_number'         => $request->lot_number,
+                'notes'              => $request->notes,
             ]);
 
             // Update item quantity and depreciation settings if provided
             $item = Item::find($request->item_id);
             $item->increment('quantity', $request->quantity);
-            
-            // Update item with depreciation settings if provided
-            if ($request->depreciation_method && $request->depreciation_method !== '') {
-                $item->update([
-                    'depreciation_method' => $request->depreciation_method,
-                    'useful_life_years' => $request->useful_life_years,
-                    'salvage_value' => $request->salvage_value,
-                    'depreciation_rate' => $request->depreciation_rate,
-                    'purchase_price' => $request->unit_cost,
-                    'purchase_date' => now()->toDateString(),
-                ]);
-                $item->updateDepreciation();
+
+            // If item was disposed or spoiled, mark as available now that stock is back
+            $item->refresh();
+            if (in_array($item->status, ['disposed', 'spoiled']) && $item->quantity > 0) {
+                $item->update(['status' => 'available']);
             }
-            
+
             if (!$item->unit || $item->unit === 'pcs') {
                 $item->update([
                     'unit' => $request->unit ?? 'pcs',
@@ -168,7 +167,7 @@ class BatchController extends Controller
      */
     public function show(Batch $batch)
     {
-        $batch->load(['item.category', 'items']);
+        $batch->load(['item' => fn($q) => $q->withTrashed()->with('category'), 'items']);
         return view('batches.show', compact('batch'));
     }
 
@@ -195,7 +194,7 @@ class BatchController extends Controller
             'supplier' => 'nullable|string|max:255',
             'lot_number' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
-            'status' => 'required|in:active,expired,recalled,depleted',
+            'status' => 'required|in:active,expired',
         ]);
 
         DB::transaction(function () use ($request, $batch) {

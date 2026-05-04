@@ -53,7 +53,7 @@
                        name="password" 
                        required 
                        autocomplete="current-password"
-                       class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl transition-all duration-200 bg-white/50 backdrop-blur-sm" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
+                       class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl transition-all duration-200 bg-white/50 backdrop-blur-sm [&::-ms-reveal]:hidden [&::-webkit-contacts-auto-fill-button]:hidden" style="focus:ring-2; focus:ring-color: #D4AF37; focus:border-color: #D4AF37;"
                        placeholder="Enter your password">
                 <button type="button" 
                         @click="showPassword = !showPassword"

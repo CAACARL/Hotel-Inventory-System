@@ -74,22 +74,26 @@
                 </button>
                 
                 @if($department->items_count == 0)
-                    <button @click="deleteDepartmentId = {{ $department->id }}; deleteDepartmentName = '{{ $department->name }}'; deleteModal = true" 
-                            class="inline-flex items-center px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 text-sm font-medium"
-                            title="Delete department">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                        Delete
-                    </button>
+                    <form method="POST" action="{{ route('departments.toggle-active', $department) }}" class="flex items-center" style="display:contents">
+                        @csrf
+                        <button type="submit"
+                                class="inline-flex items-center px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium {{ $department->is_active ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50' }}"
+                                title="{{ $department->is_active ? 'Deactivate department' : 'Activate department' }}">
+                            @if($department->is_active)
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                Deactivate
+                            @else
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Activate
+                            @endif
+                        </button>
+                    </form>
                 @else
-                    <button disabled 
+                    <button disabled
                             class="inline-flex items-center px-3 py-2 text-gray-400 cursor-not-allowed rounded-lg text-sm font-medium"
-                            title="Cannot delete department with items">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                        Delete
+                            title="Cannot change status: department has items">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                        {{ $department->is_active ? 'Deactivate' : 'Activate' }}
                     </button>
                 @endif
             </div>

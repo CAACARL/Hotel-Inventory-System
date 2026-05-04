@@ -1,3 +1,4 @@
+<x-app-layout>
 <style>
     /* Modern styling */
     .modern-card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); transition: all 0.2s ease-in-out; }
@@ -23,7 +24,6 @@
     .modal-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     body.modal-open { overflow: hidden; }
 </style>
-
 <div x-data="{ 
     createModal: false,
     viewModal: false,
@@ -36,7 +36,6 @@
     deleteItemId: null,
     deleteItemName: ''
 }">
-<x-app-layout>
     <div class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             
@@ -65,6 +64,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
                             </svg>
                             <span class="hidden sm:inline">Borrowed Items</span>
+                        </a>
+                        <a href="{{ route('items.archived') }}" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #6B7280; color: #374151;">
+                            <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Archived Items</span>
                         </a>
                         <button @click="createModal = true" class="inline-flex items-center px-3 sm:px-6 py-2 sm:py-3 bg-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-semibold" style="border: 1px solid #D4AF37; color: #3D2914;">
                             <svg class="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,5 +102,5 @@
 
     @include('items.partials.scripts')
 
-</x-app-layout>
 </div>
+</x-app-layout>

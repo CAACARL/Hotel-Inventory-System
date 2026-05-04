@@ -9,6 +9,7 @@
      class="fixed inset-0 z-[60] overflow-y-auto" 
      @keydown.escape="createModal = false"
      style="display: none;"
+     x-data="{ selectedItemType: '' }"
      x-init="$watch('createModal', value => { document.body.classList.toggle('modal-open', value) })">
     
     <!-- Enhanced Backdrop with Blur -->
@@ -64,10 +65,11 @@
                             <div>
                                 <label for="create_item_id" class="block text-xs font-semibold text-gray-700 mb-1.5">Item to Replenish</label>
                                 <select id="create_item_id" name="item_id" 
-                                    class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 hover:border-gray-400 text-sm" required>
-                                    <option value="">Select Item</option>
+                                    class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 hover:border-gray-400 text-sm" required
+                                    @change="selectedItemType = $event.target.selectedOptions[0].dataset.type ?? ''">
+                                    <option value="" data-type="">Select Item</option>
                                     @foreach($items as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }} ({{ $item->category->name }})</option>
+                                        <option value="{{ $item->id }}" data-type="{{ $item->item_type }}">{{ $item->name }} ({{ $item->category->name }})</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -105,8 +107,8 @@
                         </div>
                     </div>
 
-                    <!-- Tracking & Dates Section -->
-                    <div class="mb-6">
+                    <!-- Tracking & Dates Section (consumables only) -->
+                    <div class="mb-6" x-show="selectedItemType !== 'non-consumable'">
                         <div class="flex items-center mb-3">
                             <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
                                 <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,8 +145,8 @@
                         </div>
                     </div>
 
-                    <!-- Depreciation Section -->
-                    <div class="mb-6" id="depreciation-section">
+                    <!-- Depreciation Section (non-consumables only) -->
+                    <div class="mb-6" id="depreciation-section" x-show="selectedItemType === 'non-consumable'">
                         <div class="flex items-center mb-3">
                             <div class="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-2">
                                 <svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
