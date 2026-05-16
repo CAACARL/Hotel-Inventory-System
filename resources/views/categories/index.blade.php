@@ -19,36 +19,82 @@
     html {
         overflow-y: scroll;
     }
+    
+    /* Hierarchical Tree Styling */
     .category-tree {
-        margin-left: 0;
-    }
-    .category-tree .category-item {
-        margin-left: 2rem;
-    }
-    .category-tree .category-item .category-item {
-        margin-left: 4rem;
-    }
-    .category-tree .category-item .category-item .category-item {
-        margin-left: 6rem;
+        position: relative;
     }
     
-    /* Modern styling */
+    .category-item {
+        position: relative;
+    }
+    
+    /* Connection lines for hierarchy */
+    .category-item::before {
+        content: '';
+        position: absolute;
+        left: -20px;
+        top: 0;
+        bottom: 50%;
+        width: 20px;
+        border-left: 2px solid #D4AF37;
+        border-bottom: 2px solid #D4AF37;
+        border-bottom-left-radius: 8px;
+    }
+    
+    .category-item::after {
+        content: '';
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        bottom: -100%;
+        width: 2px;
+        background: linear-gradient(to bottom, #D4AF37 0%, transparent 100%);
+    }
+    
+    .category-item:last-child::after {
+        display: none;
+    }
+    
+    /* Depth-based styling */
+    .depth-0 {
+        margin-left: 0;
+    }
+    
+    .depth-1 {
+        margin-left: 2.5rem;
+    }
+    
+    .depth-2 {
+        margin-left: 5rem;
+    }
+    
+    .depth-3 {
+        margin-left: 7.5rem;
+    }
+    
+    /* Modern card styling */
     .modern-card {
         background: white;
         border: 1px solid #e5e7eb;
         border-radius: 16px;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-        transition: all 0.2s ease-in-out;
+        transition: all 0.3s ease-in-out;
     }
+    
     .modern-card:hover {
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+        border-color: #D4AF37;
     }
+    
     .modern-button {
         padding: 12px 24px;
         border-radius: 12px;
         font-weight: 600;
         transition: all 0.2s ease-in-out;
     }
+    
     .modern-button:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -73,6 +119,56 @@
     
     .animated-button:hover::before {
         left: 100%;
+    }
+    
+    /* Hierarchy depth indicators */
+    .depth-indicator {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        border-radius: 4px;
+    }
+    
+    .depth-0 .depth-indicator {
+        background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);
+    }
+    
+    .depth-1 .depth-indicator {
+        background: linear-gradient(135deg, #D4AF37 0%, #F4E4BC 100%);
+    }
+    
+    .depth-2 .depth-indicator {
+        background: linear-gradient(135deg, #F4E4BC 0%, #D4AF37 100%);
+    }
+    
+    .depth-3 .depth-indicator {
+        background: linear-gradient(135deg, #D4AF37 0%, #3D2914 100%);
+    }
+    
+    /* Category card glow effect */
+    .category-card-glow {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .category-card-glow::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, #D4AF37, #3D2914, #D4AF37);
+        border-radius: 18px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+    
+    .category-card-glow:hover::before {
+        opacity: 0.2;
     }
 </style>
 <x-app-layout>

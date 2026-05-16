@@ -67,7 +67,7 @@
                     @endif
 
                     @if($item->quantity > 0 && $item->status === 'available')
-                        <button @click="selectedItem = {{ $item->toJson() }}; borrowModal = true"
+                        <button @click="console.log('Borrow clicked', $data); selectedItem = { id: {{ $item->id }}, name: '{{ addslashes($item->name) }}', quantity: {{ $item->quantity }}, unit: '{{ $item->unit }}' }; borrowModal = true; console.log('After click', { selectedItem, borrowModal })"
                                 class="inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors"
                                 style="color: #D4AF37; border-color: #D4AF37;">
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
@@ -89,6 +89,19 @@
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path></svg>
                             Archive
                         </button>
+
+                        @if($item->quantity > 0 && $item->status !== 'disposed' && $item->status !== 'spoiled')
+                            <button @click="$dispatch('open-dispose', { id: {{ $item->id }}, name: '{{ addslashes($item->name) }}', qty: {{ $item->quantity }} })"
+                                    class="inline-flex items-center px-3 py-1.5 text-red-600 hover:bg-red-50 text-xs font-medium rounded-lg border border-red-200 transition-colors">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+                                Dispose
+                            </button>
+                        @else
+                            <button disabled class="inline-flex items-center px-3 py-1.5 text-gray-400 cursor-not-allowed text-xs font-medium rounded-lg border border-gray-300">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+                                Dispose
+                            </button>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -191,7 +204,7 @@
                                 @endif
 
                                 @if($item->quantity > 0 && $item->status === 'available')
-                                    <button @click="selectedItem = {{ $item->toJson() }}; borrowModal = true"
+                                    <button @click="selectedItem = { id: {{ $item->id }}, name: '{{ addslashes($item->name) }}', quantity: {{ $item->quantity }}, unit: '{{ $item->unit }}' }; borrowModal = true"
                                             class="inline-flex items-center px-2 py-1 hover:bg-amber-50 text-xs font-medium rounded transition-all duration-200"
                                             style="color: #D4AF37;" onmouseover="this.style.color='#3D2914'" onmouseout="this.style.color='#D4AF37'">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
@@ -223,6 +236,19 @@
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path></svg>
                                         Archive
                                     </button>
+
+                                    @if($item->quantity > 0 && $item->status !== 'disposed' && $item->status !== 'spoiled')
+                                        <button @click="$dispatch('open-dispose', { id: {{ $item->id }}, name: '{{ addslashes($item->name) }}', qty: {{ $item->quantity }} })"
+                                                class="inline-flex items-center px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 text-xs font-medium rounded transition-all duration-200">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+                                            Dispose
+                                        </button>
+                                    @else
+                                        <button disabled class="inline-flex items-center px-2 py-1 text-gray-400 cursor-not-allowed text-xs font-medium rounded">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+                                            Dispose
+                                        </button>
+                                    @endif
                                 @endif
                             </div>
                         </td>

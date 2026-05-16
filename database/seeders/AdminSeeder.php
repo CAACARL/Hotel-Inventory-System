@@ -14,7 +14,7 @@ class AdminSeeder extends Seeder
             ['email' => 'admin@iconvenue.com'],
             [
                 'name' => 'System Administrator',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('innoadmin123-123'),
                 'role' => 'admin',
                 'department' => 'Administration',
                 'is_active' => true,

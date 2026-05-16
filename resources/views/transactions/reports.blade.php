@@ -54,6 +54,46 @@
     .animated-button:hover::before {
         left: 100%;
     }
+
+    /* Enhanced chart cards */
+    .chart-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .chart-card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, #D4AF37, #3D2914, #D4AF37);
+        border-radius: 18px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+    
+    .chart-card:hover::before {
+        opacity: 0.15;
+    }
+
+    .chart-header-icon {
+        background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);
+        box-shadow: 0 4px 12px rgba(61, 41, 20, 0.2);
+    }
+
+    .list-item-card {
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .list-item-card:hover {
+        border-color: #D4AF37;
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+    }
 </style>
 
 <x-app-layout>
@@ -127,70 +167,120 @@
             </div>
 
             <!-- KPI Cards -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
                 <!-- Total Transactions -->
-                <div class="modern-card stats-card glass-effect rounded-2xl p-4 sm:p-6 border border-white/20 hover:shadow-2xl transition-all duration-300">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
-                            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                            </svg>
+                <div class="modern-card stats-card glass-effect rounded-2xl p-6 border border-white/20 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full -mr-16 -mt-16"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                            </div>
+                            <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold {{ $transactionGrowth >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    @if($transactionGrowth >= 0)
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    @else
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                                    @endif
+                                </svg>
+                                {{ $transactionGrowth >= 0 ? '+' : '' }}{{ $transactionGrowth }}%
+                            </div>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs sm:text-sm font-medium text-gray-600 mb-1">Total Transactions</p>
-                            <p class="text-xl sm:text-3xl font-bold text-gray-900">{{ number_format($totalTransactions) }}</p>
-                            <p class="text-xs font-medium text-green-600 hidden sm:block">+12% this month</p>
-                        </div>
+                        <h3 class="text-sm font-medium text-gray-600 mb-1">Total Transactions</h3>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">{{ number_format($totalTransactions) }}</p>
+                        <p class="text-xs text-gray-500">
+                            <span class="font-medium">{{ number_format($thisMonthTransactions ?? 0) }}</span> this month
+                        </p>
                     </div>
                 </div>
 
                 <!-- Total Items -->
-                <div class="modern-card stats-card glass-effect rounded-2xl p-4 sm:p-6 border border-white/20 hover:shadow-2xl transition-all duration-300">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%);">
-                            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                            </svg>
+                <div class="modern-card stats-card glass-effect rounded-2xl p-6 border border-white/20 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/10 to-transparent rounded-full -mr-16 -mt-16"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                            </div>
+                            <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ number_format(($totalItems - $lowStockItems)) }} OK
+                            </div>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs sm:text-sm font-medium text-gray-600 mb-1">Total Items</p>
-                            <p class="text-xl sm:text-3xl font-bold text-gray-900">{{ number_format($totalItems) }}</p>
-                            <p class="text-xs font-medium text-gray-500 hidden sm:block">Across all categories</p>
+                        <h3 class="text-sm font-medium text-gray-600 mb-1">Inventory Items</h3>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">{{ number_format($totalItems) }}</p>
+                        <div class="flex items-center gap-2">
+                            <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" style="width: {{ $totalItems > 0 ? round((($totalItems - $lowStockItems) / $totalItems) * 100) : 0 }}%"></div>
+                            </div>
+                            <span class="text-xs font-medium text-gray-600">{{ $totalItems > 0 ? round((($totalItems - $lowStockItems) / $totalItems) * 100) : 0 }}%</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Inventory Value -->
-                <div class="modern-card stats-card glass-effect rounded-2xl p-4 sm:p-6 border border-white/20 hover:shadow-2xl transition-all duration-300">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0" style="background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);">
-                            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                            </svg>
+                <div class="modern-card stats-card glass-effect rounded-2xl p-6 border border-white/20 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full -mr-16 -mt-16"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Assets
+                            </div>
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs sm:text-sm font-medium text-gray-600 mb-1">Inventory Value</p>
-                            <p class="text-lg sm:text-3xl font-bold text-gray-900 truncate">₱{{ number_format($totalValue, 0) }}</p>
-                            <p class="text-xs font-medium text-gray-500 hidden sm:block">Total asset value</p>
-                        </div>
+                        <h3 class="text-sm font-medium text-gray-600 mb-1">Total Value</h3>
+                        <p class="text-3xl font-bold text-gray-900 mb-2">₱{{ number_format($totalValue, 0) }}</p>
+                        <p class="text-xs text-gray-500">
+                            Current book value
+                        </p>
                     </div>
                 </div>
 
                 <!-- Low Stock Alerts -->
-                <div class="modern-card stats-card glass-effect rounded-2xl p-4 sm:p-6 border border-white/20 hover:shadow-2xl transition-all duration-300">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0" style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
-                            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                            </svg>
+                <div class="modern-card stats-card glass-effect rounded-2xl p-6 border border-white/20 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/10 to-transparent rounded-full -mr-16 -mt-16"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                            </div>
+                            @if($lowStockItems > 0)
+                                <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700 animate-pulse">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                    </svg>
+                                    Action Needed
+                                </div>
+                            @else
+                                <div class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    All Good
+                                </div>
+                            @endif
                         </div>
-                        <div class="min-w-0">
-                            <p class="text-xs sm:text-sm font-medium text-gray-600 mb-1">Low Stock Alerts</p>
-                            <p class="text-xl sm:text-3xl font-bold text-gray-900">{{ $lowStockItems }}</p>
-                            <p class="text-xs font-medium {{ $lowStockItems > 0 ? 'text-red-600' : 'text-green-600' }}">
-                                {{ $lowStockItems > 0 ? 'Needs attention' : 'All good!' }}
-                            </p>
-                        </div>
+                        <h3 class="text-sm font-medium text-gray-600 mb-1">Low Stock Alerts</h3>
+                        <p class="text-3xl font-bold {{ $lowStockItems > 0 ? 'text-red-600' : 'text-gray-900' }} mb-2">{{ $lowStockItems }}</p>
+                        <p class="text-xs {{ $lowStockItems > 0 ? 'text-red-600 font-medium' : 'text-gray-500' }}">
+                            {{ $lowStockItems > 0 ? $lowStockPercentage . '% of inventory needs restocking' : 'All items adequately stocked' }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -198,115 +288,208 @@
             <!-- Charts Section -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8">
                 <!-- Transaction Types Chart -->
-                <div class="modern-card p-4 sm:p-6">
-                    <div class="flex items-center justify-between mb-4 sm:mb-6">
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Transaction Types</h3>
-                            <p class="text-sm text-gray-600">Distribution of transaction activities</p>
+                <div class="modern-card chart-card p-6 sm:p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-amber-500/5 to-transparent rounded-full -mr-20 -mt-20"></div>
+                    <div class="flex items-center justify-between mb-6 relative">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 chart-header-icon rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Transaction Types</h3>
+                                <p class="text-sm text-gray-500 mt-0.5">Distribution of transaction activities</p>
+                            </div>
+                        </div>
+                        <div class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-700 border border-amber-200">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Live Data
                         </div>
                     </div>
-                    <div class="relative h-56 sm:h-80">
+                    <div class="relative h-64 sm:h-80">
                         <canvas id="transactionTypesChart"></canvas>
                     </div>
                 </div>
 
                 <!-- Stock Status Chart -->
-                <div class="modern-card p-4 sm:p-6">
-                    <div class="flex items-center justify-between mb-4 sm:mb-6">
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Stock Status</h3>
-                            <p class="text-sm text-gray-600">Current inventory health overview</p>
+                <div class="modern-card chart-card p-6 sm:p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-green-500/5 to-transparent rounded-full -mr-20 -mt-20"></div>
+                    <div class="flex items-center justify-between mb-6 relative">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Stock Status</h3>
+                                <p class="text-sm text-gray-500 mt-0.5">Current inventory health overview</p>
+                            </div>
+                        </div>
+                        <div class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            Inventory
                         </div>
                     </div>
-                    <div class="relative h-56 sm:h-80">
+                    <div class="relative h-64 sm:h-80">
                         <canvas id="stockStatusChart"></canvas>
                     </div>
                 </div>
             </div>
 
             <!-- Transaction Trends Chart -->
-            <div class="modern-card p-4 sm:p-6 mb-6 sm:mb-8">
-                <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <div>
-                        <h3 class="text-lg sm:text-xl font-bold text-gray-900">Transaction Trends</h3>
-                        <p class="text-sm text-gray-600">Monthly transaction activity over the last 12 months</p>
+            <div class="modern-card chart-card p-6 sm:p-8 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500/5 to-transparent rounded-full -mr-20 -mt-20"></div>
+                <div class="flex items-center justify-between mb-6 relative">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style="background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Transaction Trends</h3>
+                            <p class="text-sm text-gray-500 mt-0.5">Monthly transaction activity over the last 12 months</p>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        12 Months
                     </div>
                 </div>
-                <div class="relative h-56 sm:h-80">
+                <div class="relative h-64 sm:h-80">
                     <canvas id="transactionTrendsChart"></canvas>
                 </div>
             </div>
 
             <!-- Items by Category Chart -->
-            <div class="modern-card p-4 sm:p-6 mb-6 sm:mb-8">
-                <div class="flex items-center justify-between mb-4 sm:mb-6">
-                    <div>
-                        <h3 class="text-lg sm:text-xl font-bold text-gray-900">Items by Category</h3>
-                        <p class="text-sm text-gray-600">Distribution of items across categories</p>
+            <div class="modern-card chart-card p-6 sm:p-8 mb-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-purple-500/5 to-transparent rounded-full -mr-20 -mt-20"></div>
+                <div class="flex items-center justify-between mb-6 relative">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style="background: linear-gradient(135deg, #7C3AED 0%, #A855F7 100%);">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Items by Category</h3>
+                            <p class="text-sm text-gray-500 mt-0.5">Distribution of items across categories</p>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                        Categories
                     </div>
                 </div>
-                <div class="relative h-56 sm:h-80">
+                <div class="relative h-64 sm:h-80">
                     <canvas id="itemsByCategoryChart"></canvas>
                 </div>
             </div>
 
             <!-- Top Borrowed Items and User Activity -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-6 sm:mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8">
                 <!-- Top Borrowed Items -->
-                <div class="modern-card p-4 sm:p-6">
-                    <div class="flex items-center justify-between mb-4 sm:mb-6">
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Top Borrowed Items</h3>
-                            <p class="text-sm text-gray-600">Top 5 frequently borrowed items</p>
+                <div class="modern-card chart-card p-6 sm:p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-orange-500/5 to-transparent rounded-full -mr-20 -mt-20"></div>
+                    <div class="flex items-center justify-between mb-6 relative">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style="background: linear-gradient(135deg, #EA580C 0%, #F97316 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Top Borrowed Items</h3>
+                                <p class="text-sm text-gray-500 mt-0.5">Top 5 frequently borrowed items</p>
+                            </div>
+                        </div>
+                        <div class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-gradient-to-r from-orange-50 to-red-50 text-orange-700 border border-orange-200">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
+                            Top 5
                         </div>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         @forelse($topBorrowedItems as $index => $item)
-                        <div class="flex items-center p-4 bg-gray-50 rounded-xl">
-                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
+                        <div class="flex items-center p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl list-item-card">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4 flex-shrink-0 shadow-md">
                                 <span class="text-white font-bold text-sm">{{ $index + 1 }}</span>
                             </div>
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-900">{{ $item->name }}</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 truncate">{{ $item->name }}</p>
                                 <p class="text-sm text-gray-600">{{ $item->borrow_count }} times borrowed</p>
                             </div>
-                            <div class="text-right">
-                                <p class="text-lg font-bold text-blue-600">{{ $item->total_borrowed }}</p>
-                                <p class="text-xs text-gray-500">Total quantity</p>
+                            <div class="text-right ml-4">
+                                <p class="text-lg font-bold text-orange-600">{{ $item->total_borrowed }}</p>
+                                <p class="text-xs text-gray-500">Total qty</p>
                             </div>
                         </div>
                         @empty
-                        <div class="text-center py-8 text-gray-500">
-                            <p>No borrowing activity yet</p>
+                        <div class="text-center py-12 text-gray-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                            </svg>
+                            <p class="font-medium">No borrowing activity yet</p>
                         </div>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- User Activity -->
-                <div class="modern-card p-4 sm:p-6">
-                    <div class="flex items-center justify-between mb-4 sm:mb-6">
-                        <div>
-                            <h3 class="text-lg sm:text-xl font-bold text-gray-900">User Activity</h3>
-                            <p class="text-sm text-gray-600">Most active users in the system</p>
+                <div class="modern-card chart-card p-6 sm:p-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-blue-500/5 to-transparent rounded-full -mr-20 -mt-20"></div>
+                    <div class="flex items-center justify-between mb-6 relative">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg" style="background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%);">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">User Activity</h3>
+                                <p class="text-sm text-gray-500 mt-0.5">Most active users in the system</p>
+                            </div>
                         </div>
-                        <a href="{{ route('transactions.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium hidden sm:block">View All Transactions</a>
+                        <a href="{{ route('transactions.index') }}" class="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border border-blue-200 hover:shadow-md transition-all duration-200">
+                            View All
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
                     </div>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         @forelse($userActivity as $user)
-                        <div class="flex items-center p-4 bg-gray-50 rounded-xl">
-                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4">
+                        <div class="flex items-center p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl list-item-card">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0 shadow-md">
                                 <span class="text-white font-bold text-sm">{{ substr($user->name, 0, 1) }}</span>
                             </div>
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-900 text-sm">{{ $user->name }}</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-gray-900 text-sm truncate">{{ $user->name }}</p>
+                                <p class="text-xs text-gray-500">System user</p>
+                            </div>
+                            <div class="text-right ml-4">
                                 <p class="text-2xl font-bold text-blue-600">{{ $user->transaction_count }}</p>
                                 <p class="text-xs text-gray-500">Transactions</p>
                             </div>
                         </div>
                         @empty
-                        <div class="text-center py-8 text-gray-500">
-                            <p>No user activity data available</p>
+                        <div class="text-center py-12 text-gray-400">
+                            <svg class="w-16 h-16 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <p class="font-medium">No user activity data available</p>
                         </div>
                         @endforelse
                     </div>

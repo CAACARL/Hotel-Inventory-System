@@ -1,4 +1,3 @@
-<x-app-layout>
 <style>
     /* Modern styling */
     .modern-card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); transition: all 0.2s ease-in-out; }
@@ -24,6 +23,7 @@
     .modal-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     body.modal-open { overflow: hidden; }
 </style>
+
 <div x-data="{ 
     createModal: false,
     viewModal: false,
@@ -36,6 +36,7 @@
     deleteItemId: null,
     deleteItemName: ''
 }">
+<x-app-layout>
     <div class="py-4 sm:py-8">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             
@@ -102,5 +103,5 @@
 
     @include('items.partials.scripts')
 
-</div>
 </x-app-layout>
+</div>

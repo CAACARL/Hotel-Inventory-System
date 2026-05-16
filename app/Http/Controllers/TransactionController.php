@@ -65,6 +65,25 @@ class TransactionController extends Controller
         $totalTransactions = Transaction::count();
         $totalItems = Item::count();
 
+        // Calculate transaction growth (this month vs last month)
+        $thisMonthTransactions = Transaction::whereMonth('transaction_date', now()->month)
+            ->whereYear('transaction_date', now()->year)
+            ->count();
+        $lastMonthTransactions = Transaction::whereMonth('transaction_date', now()->subMonth()->month)
+            ->whereYear('transaction_date', now()->subMonth()->year)
+            ->count();
+        $transactionGrowth = $lastMonthTransactions > 0 
+            ? round((($thisMonthTransactions - $lastMonthTransactions) / $lastMonthTransactions) * 100, 1)
+            : 0;
+
+        // Calculate items growth (current vs 30 days ago)
+        $itemsThirtyDaysAgo = Transaction::where('transaction_type', 'replenish')
+            ->where('transaction_date', '<', now()->subDays(30))
+            ->count();
+        $itemsGrowth = $itemsThirtyDaysAgo > 0
+            ? round((($totalItems - $itemsThirtyDaysAgo) / $itemsThirtyDaysAgo) * 100, 1)
+            : 0;
+
         // Sum current book value across all active batches that have depreciation set
         $totalValue = \App\Models\Batch::where('status', 'active')
             ->whereNotNull('purchase_price')
@@ -76,6 +95,7 @@ class TransactionController extends Controller
                 ->sum(fn($item) => $item->unit_price * $item->quantity);
 
         $lowStockItems = Item::lowStock()->count();
+        $lowStockPercentage = $totalItems > 0 ? round(($lowStockItems / $totalItems) * 100, 1) : 0;
 
         $recentTransactions = Transaction::with(['item' => fn($q) => $q->withTrashed()->with('category'), 'user'])
             ->orderBy('transaction_date', 'desc')
@@ -126,9 +146,12 @@ class TransactionController extends Controller
 
         return view('transactions.reports', compact(
             'totalTransactions',
+            'transactionGrowth',
             'totalItems',
+            'itemsGrowth',
             'totalValue',
             'lowStockItems',
+            'lowStockPercentage',
             'recentTransactions',
             'transactionsByType',
             'transactionsByMonth',
