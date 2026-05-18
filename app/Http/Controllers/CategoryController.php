@@ -48,8 +48,14 @@ class CategoryController extends Controller
         $existingCategory = $query->first();
         if ($existingCategory) {
             $parentName = $request->parent_id ? Category::find($request->parent_id)->name : 'root level';
+            $message = 'Category "' . $request->name . '" already exists in ' . $parentName . '. Please choose a different name.';
+            
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+            
             return redirect()->route('categories.index')
-                ->with('warning', 'Category "' . $request->name . '" already exists in ' . $parentName . '. Please choose a different name.');
+                ->with('warning', $message);
         }
 
         $request->validate([
@@ -60,6 +66,20 @@ class CategoryController extends Controller
         ]);
 
         $category = Category::create($request->all());
+
+        // Return JSON for AJAX requests
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Category created successfully',
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'parent_id' => $category->parent_id,
+                    'level' => $category->level
+                ]
+            ]);
+        }
 
         $parentName = $category->parent ? $category->parent->name : 'root level';
         return redirect()->route('categories.index')

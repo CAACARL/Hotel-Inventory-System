@@ -39,13 +39,5 @@
                 </div>
             </div>
         </div>
-
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
-            <div class="p-4 sm:p-8">
-                <div class="max-w-3xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
-        </div>
     </div>
 </x-app-layout>

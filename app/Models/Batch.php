@@ -25,6 +25,7 @@ class Batch extends Model
         'expiry_date',
         'supplier',
         'lot_number',
+        'location',
         'notes',
         'status'
     ];

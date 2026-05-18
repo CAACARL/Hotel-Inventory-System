@@ -2,31 +2,41 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     @forelse($departments as $department)
     <!-- Department Tile with FIXED Height for Perfect Alignment -->
-    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden h-80 flex flex-col">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden h-80 flex flex-col relative">
+        <!-- Decorative Background Pattern -->
+        <div class="absolute inset-0 opacity-[0.15] pointer-events-none">
+            <svg class="absolute top-32 right-8 w-32 h-32 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+        </div>
+        
+        <!-- Subtle Gradient Accent -->
+        <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-50 to-transparent rounded-full -mr-20 -mt-20"></div>
+        
         <!-- Department Header - Fixed Height -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-100 h-24 flex-shrink-0">
+        <div class="flex items-center justify-between p-6 border-b border-gray-100 h-24 flex-shrink-0 relative z-10">
             <div class="flex items-center">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center mr-4 shadow-sm" 
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-4 shadow-sm border border-gray-200" 
                      style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900 truncate max-w-32">{{ $department->name }}</h3>
-                    <p class="text-sm text-gray-500">ID: {{ $department->id }}</p>
+                    <h3 class="text-lg font-semibold text-gray-900 truncate max-w-32">{{ $department->name }}</h3>
+                    <p class="text-xs text-gray-500">ID: {{ $department->id }}</p>
                 </div>
             </div>
             
             <!-- Status Badge -->
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {{ $department->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                <div class="w-2 h-2 {{ $department->is_active ? 'bg-green-500' : 'bg-red-500' }} rounded-full mr-2"></div>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border {{ $department->is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200' }}">
+                <div class="w-1.5 h-1.5 {{ $department->is_active ? 'bg-green-500' : 'bg-red-500' }} rounded-full mr-1.5"></div>
                 {{ $department->is_active ? 'Active' : 'Inactive' }}
             </span>
         </div>
         
         <!-- Department Content - Fixed Height with Scrollable Description -->
-        <div class="flex-1 flex flex-col p-6">
+        <div class="flex-1 flex flex-col p-6 relative z-10">
             <!-- Description Section - Fixed Height with Overflow -->
             <div class="h-20 mb-4 overflow-hidden">
                 <p class="text-gray-600 leading-relaxed text-sm line-clamp-3">{{ $department->description ?: 'No description available' }}</p>
@@ -53,11 +63,11 @@
             </div>
             
             <!-- Actions Row - Fixed Position at Bottom -->
-            <div class="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100 h-12 mt-auto">
+            <div class="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100 h-12 mt-auto relative z-10">
                 <button @click="selectedDepartment = {{ $department->toJson() }}; viewModal = true" 
-                        class="inline-flex items-center px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 text-sm font-medium"
+                        class="inline-flex items-center px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-150 text-sm font-medium"
                         title="View details">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
@@ -65,9 +75,9 @@
                 </button>
                 
                 <button @click="selectedDepartment = {{ $department->toJson() }}; editModal = true" 
-                        class="inline-flex items-center px-3 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors duration-200 text-sm font-medium"
+                        class="inline-flex items-center px-3 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors duration-150 text-sm font-medium"
                         title="Edit department">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                     Edit
@@ -77,13 +87,13 @@
                     <form method="POST" action="{{ route('departments.toggle-active', $department) }}" class="flex items-center" style="display:contents">
                         @csrf
                         <button type="submit"
-                                class="inline-flex items-center px-3 py-2 rounded-lg transition-colors duration-200 text-sm font-medium {{ $department->is_active ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50' }}"
+                                class="inline-flex items-center px-3 py-2 rounded-lg transition-colors duration-150 text-sm font-medium {{ $department->is_active ? 'text-yellow-600 hover:bg-yellow-50' : 'text-green-600 hover:bg-green-50' }}"
                                 title="{{ $department->is_active ? 'Deactivate department' : 'Activate department' }}">
                             @if($department->is_active)
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                                 Deactivate
                             @else
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                 Activate
                             @endif
                         </button>
@@ -92,7 +102,7 @@
                     <button disabled
                             class="inline-flex items-center px-3 py-2 text-gray-400 cursor-not-allowed rounded-lg text-sm font-medium"
                             title="Cannot change status: department has items">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                         {{ $department->is_active ? 'Deactivate' : 'Activate' }}
                     </button>
                 @endif
@@ -101,16 +111,16 @@
     </div>
     @empty
     <!-- Empty State -->
-    <div class="col-span-full text-center py-16">
+    <div class="col-span-full text-center py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
         <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
             </svg>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 mb-2">No departments found</h3>
-        <p class="text-gray-500 mb-6">Create your first hotel department to get started.</p>
-        <button @click="createModal = true" class="inline-flex items-center px-6 py-3 bg-amber-600 text-white rounded-xl hover:bg-amber-700 transition-colors duration-200">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <p class="text-gray-500 mb-6 text-sm">Create your first hotel department to get started.</p>
+        <button @click="createModal = true" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-900 to-yellow-600 text-white font-medium rounded-lg hover:from-amber-800 hover:to-yellow-500 transition-all duration-150 shadow-sm">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
             Add Department

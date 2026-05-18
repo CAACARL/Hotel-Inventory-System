@@ -20,7 +20,6 @@ class Item extends Model
         'unit',
         'status',
         'item_type',
-        'location',
         'unit_price',
         'image',
     ];

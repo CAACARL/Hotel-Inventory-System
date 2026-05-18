@@ -221,6 +221,13 @@
                         </div>
                         @endif
 
+                        @if($batch->location)
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span class="text-sm font-semibold text-gray-700">Location</span>
+                            <span class="text-lg font-semibold text-gray-900">{{ $batch->location }}</span>
+                        </div>
+                        @endif
+
                         @if($batch->lot_number)
                         <div class="flex justify-between items-center py-3 border-b border-gray-100">
                             <span class="text-sm font-semibold text-gray-700">Lot Number</span>

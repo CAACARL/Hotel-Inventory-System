@@ -32,6 +32,7 @@
     returnModal: false,
     searchModal: false, 
     deleteModal: false,
+    quickCreateCategoryModal: false,
     selectedItem: null,
     deleteItemId: null,
     deleteItemName: ''

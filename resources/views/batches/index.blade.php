@@ -166,8 +166,27 @@
                 @endif
             </div>
 
-            <div class="modern-card bg-white overflow-hidden shadow-lg rounded-2xl">
-                <div class="p-3 sm:p-8 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200 relative">
+                <!-- Decorative Background - Stacked Layers Pattern -->
+                <div class="absolute inset-0 opacity-[0.08] pointer-events-none overflow-hidden">
+                    <!-- Large stacked rectangles representing batches/layers -->
+                    <svg class="absolute bottom-0 right-0 w-56 h-56 text-emerald-500" viewBox="0 0 100 100">
+                        <rect x="5" y="65" width="75" height="10" rx="3" fill="currentColor"/>
+                        <rect x="10" y="52" width="75" height="10" rx="3" fill="currentColor" opacity="0.85"/>
+                        <rect x="15" y="39" width="75" height="10" rx="3" fill="currentColor" opacity="0.7"/>
+                        <rect x="20" y="26" width="75" height="10" rx="3" fill="currentColor" opacity="0.55"/>
+                        <rect x="25" y="13" width="75" height="10" rx="3" fill="currentColor" opacity="0.4"/>
+                    </svg>
+                    <!-- Circular accent dots -->
+                    <svg class="absolute top-8 left-8 w-32 h-32 text-teal-400" viewBox="0 0 100 100">
+                        <circle cx="25" cy="25" r="12" fill="currentColor"/>
+                        <circle cx="60" cy="35" r="9" fill="currentColor" opacity="0.75"/>
+                        <circle cx="80" cy="60" r="14" fill="currentColor" opacity="0.6"/>
+                        <circle cx="40" cy="70" r="7" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
+                
+                <div class="p-3 sm:p-6 text-gray-900 relative z-10">
 
                     {{-- MOBILE CARD LAYOUT --}}
                     <div class="sm:hidden space-y-3">
@@ -245,6 +264,7 @@
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Quantity</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Unit Cost</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Supplier</th>
+                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Location</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Expiry Date</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
                                     <th class="px-8 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
@@ -292,6 +312,9 @@
                                     </td>
                                     <td class="px-8 py-6 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $batch->supplier ?? 'N/A' }}</div>
+                                    </td>
+                                    <td class="px-8 py-6 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $batch->location ?? 'N/A' }}</div>
                                     </td>
                                     <td class="px-8 py-6 whitespace-nowrap">
                                         @if($batch->expiry_date)

@@ -91,6 +91,7 @@ class BatchController extends Controller
             'expiry_date' => 'nullable|date|after:manufacture_date',
             'supplier' => 'nullable|string|max:255',
             'lot_number' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             // Depreciation fields
             'depreciation_method' => 'nullable|in:straight_line,declining_balance',
@@ -116,6 +117,7 @@ class BatchController extends Controller
                 'expiry_date'        => $request->expiry_date,
                 'supplier'           => $request->supplier,
                 'lot_number'         => $request->lot_number,
+                'location'           => $request->location,
                 'notes'              => $request->notes,
             ]);
 
@@ -193,6 +195,7 @@ class BatchController extends Controller
             'expiry_date' => 'nullable|date|after:manufacture_date',
             'supplier' => 'nullable|string|max:255',
             'lot_number' => 'nullable|string|max:255',
+            'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'status' => 'required|in:active,expired',
         ]);
@@ -205,7 +208,7 @@ class BatchController extends Controller
             // Update batch
             $batch->update($request->only([
                 'item_id', 'quantity', 'unit_cost', 'manufacture_date',
-                'expiry_date', 'supplier', 'lot_number', 'notes', 'status'
+                'expiry_date', 'supplier', 'lot_number', 'location', 'notes', 'status'
             ]));
 
             // Update item quantity if changed

@@ -118,13 +118,29 @@
                 @endif
             </div>
 
-            <div class="modern-card bg-white overflow-hidden shadow-lg rounded-2xl">
-                <div class="p-3 sm:p-8 text-gray-900">
+            <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200 relative">
+                <!-- Decorative Background - Abstract Triangles -->
+                <div class="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden">
+                    <!-- Top right triangle -->
+                    <svg class="absolute -top-10 -right-10 w-40 h-40 text-blue-400" viewBox="0 0 100 100">
+                        <polygon points="0,0 100,0 100,100" fill="currentColor"/>
+                    </svg>
+                    <!-- Bottom left triangle -->
+                    <svg class="absolute -bottom-10 -left-10 w-32 h-32 text-indigo-400" viewBox="0 0 100 100">
+                        <polygon points="0,100 0,0 100,100" fill="currentColor"/>
+                    </svg>
+                    <!-- Small accent triangle -->
+                    <svg class="absolute top-1/3 right-20 w-16 h-16 text-purple-300" viewBox="0 0 100 100">
+                        <polygon points="50,0 100,100 0,100" fill="currentColor"/>
+                    </svg>
+                </div>
+                
+                <div class="p-3 sm:p-6 text-gray-900 relative z-10">
 
                     {{-- MOBILE CARD LAYOUT --}}
                     <div class="sm:hidden space-y-3">
                         @forelse($transactions as $transaction)
-                        <div class="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                        <div class="border border-gray-200 rounded-xl p-3 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
                             <div class="flex items-start justify-between gap-2 mb-2">
                                 <div class="flex items-start gap-2 min-w-0">
                                     @if($transaction->item->image)
@@ -137,19 +153,41 @@
                                         </div>
                                     @endif
                                     <div class="min-w-0">
-                                        <div class="font-bold text-gray-900 text-sm truncate">{{ $transaction->item->name }}</div>
+                                        <div class="font-semibold text-gray-900 text-sm truncate">{{ $transaction->item->name }}</div>
                                         <div class="text-xs text-gray-500">{{ $transaction->item->category->name }}</div>
                                     </div>
                                 </div>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0
+                                <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-xs font-medium border flex-shrink-0 min-w-[90px]
                                     @switch($transaction->transaction_type)
-                                        @case('borrow') bg-blue-100 text-blue-800 @break
-                                        @case('return') bg-purple-100 text-purple-800 @break
-                                        @case('replenish') bg-indigo-100 text-indigo-800 @break
-                                        @case('disposal') bg-red-100 text-red-800 @break
-                                        @case('spoiled') bg-orange-100 text-orange-800 @break
-                                        @default bg-gray-100 text-gray-800 @break
+                                        @case('borrow') bg-orange-50 text-orange-700 border-orange-200 @break
+                                        @case('return') bg-green-50 text-green-700 border-green-200 @break
+                                        @case('replenish') bg-blue-50 text-blue-700 border-blue-200 @break
+                                        @case('disposal') bg-red-50 text-red-700 border-red-200 @break
+                                        @case('spoiled') bg-yellow-50 text-yellow-700 border-yellow-200 @break
+                                        @default bg-gray-50 text-gray-700 border-gray-200 @break
                                     @endswitch">
+                                    @if($transaction->transaction_type === 'borrow')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4"></path>
+                                        </svg>
+                                    @elseif($transaction->transaction_type === 'return')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"></path>
+                                        </svg>
+                                    @elseif($transaction->transaction_type === 'replenish')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                    @elseif($transaction->transaction_type === 'disposal')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
+                                        </svg>
+                                    @elseif($transaction->transaction_type === 'spoiled')
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                        </svg>
+                                    @endif
                                     {{ ucfirst(str_replace('_', ' ', $transaction->transaction_type)) }}
                                 </span>
                             </div>
@@ -179,73 +217,90 @@
                     {{-- DESKTOP TABLE LAYOUT --}}
                     <div class="hidden sm:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Date</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Item</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Type</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Quantity</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">User</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Reference</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Quantity</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Reference</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-100">
                                 @forelse($transactions as $transaction)
-                                <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                    <td class="px-8 py-6 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-gray-900">{{ $transaction->transaction_date->format('M d, Y') }}</div>
-                                        <div class="text-sm text-gray-500">{{ $transaction->transaction_date->format('h:i A') }}</div>
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-gray-900">{{ $transaction->transaction_date->format('M d, Y') }}</div>
+                                        <div class="text-xs text-gray-500">{{ $transaction->transaction_date->format('h:i A') }}</div>
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             @if($transaction->item->image)
                                                 <img src="{{ Storage::url($transaction->item->image) }}" alt="{{ $transaction->item->name }}"
-                                                     class="w-10 h-10 object-cover rounded-xl mr-3 shadow-sm border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+                                                     class="w-10 h-10 object-cover rounded-lg mr-3 shadow-sm border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
                                                      onclick="openLightbox('{{ Storage::url($transaction->item->image) }}', '{{ addslashes($transaction->item->name) }}')">
                                             @else
-                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center mr-3 shadow-sm flex-shrink-0" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
+                                                <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3 shadow-sm flex-shrink-0" style="background: linear-gradient(135deg, #3D2914 0%, #D4AF37 100%);">
                                                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                                                 </div>
                                             @endif
                                             <div>
-                                                <div class="text-sm font-bold text-gray-900">{{ $transaction->item->name }}</div>
-                                                <div class="text-sm text-gray-500">{{ $transaction->item->category->name }}</div>
+                                                <div class="text-sm font-semibold text-gray-900">{{ $transaction->item->name }}</div>
+                                                <div class="text-xs text-gray-500">{{ $transaction->item->category->name }}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-medium border min-w-[100px]
                                             @switch($transaction->transaction_type)
-                                                @case('borrow') bg-blue-100 text-blue-800 @break
-                                                @case('return') bg-purple-100 text-purple-800 @break
-                                                @case('replenish') bg-indigo-100 text-indigo-800 @break
-                                                @case('disposal') bg-red-100 text-red-800 @break
-                                                @case('spoiled') bg-orange-100 text-orange-800 @break
-                                                @default bg-gray-100 text-gray-800 @break
+                                                @case('borrow') bg-orange-50 text-orange-700 border-orange-200 @break
+                                                @case('return') bg-green-50 text-green-700 border-green-200 @break
+                                                @case('replenish') bg-blue-50 text-blue-700 border-blue-200 @break
+                                                @case('disposal') bg-red-50 text-red-700 border-red-200 @break
+                                                @case('spoiled') bg-yellow-50 text-yellow-700 border-yellow-200 @break
+                                                @default bg-gray-50 text-gray-700 border-gray-200 @break
                                             @endswitch">
-                                            @if($transaction->type === 'in')
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8l-8-8-8 8"></path></svg>
-                                            @else
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20V4m-8 8l8 8 8-8"></path></svg>
+                                            @if($transaction->transaction_type === 'borrow')
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4"></path>
+                                                </svg>
+                                            @elseif($transaction->transaction_type === 'return')
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 17l-4 4m0 0l-4-4m4 4V3"></path>
+                                                </svg>
+                                            @elseif($transaction->transaction_type === 'replenish')
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                                </svg>
+                                            @elseif($transaction->transaction_type === 'disposal')
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
+                                                </svg>
+                                            @elseif($transaction->transaction_type === 'spoiled')
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                                </svg>
                                             @endif
                                             {{ ucfirst(str_replace('_', ' ', $transaction->transaction_type)) }}
                                         </span>
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-gray-900">{{ $transaction->quantity }} {{ $transaction->item->unit }}</div>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-semibold text-gray-900">{{ $transaction->quantity }} {{ $transaction->item->unit }}</div>
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900 font-medium">{{ $transaction->user->name }}</div>
-                                        <div class="text-sm text-gray-500 capitalize">{{ $transaction->user->role }}</div>
+                                        <div class="text-xs text-gray-500 capitalize">{{ $transaction->user->role }}</div>
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $transaction->reference_number ?? 'N/A' }}</div>
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap text-sm font-medium">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a href="{{ route('transactions.show', $transaction) }}"
-                                           class="inline-flex items-center px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm font-medium rounded-lg transition-all duration-200">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                           class="inline-flex items-center px-3 py-2 text-blue-600 hover:bg-blue-50 text-sm font-medium rounded-lg transition-colors duration-150">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                             View
                                         </a>
                                     </td>
@@ -265,7 +320,7 @@
                         </table>
                     </div>
 
-                    <div class="mt-4 sm:mt-6 px-0 sm:px-8 pb-4 sm:pb-8">
+                    <div class="mt-4 sm:mt-6">
                         {{ $transactions->links() }}
                     </div>
                 </div>

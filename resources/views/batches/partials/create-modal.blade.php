@@ -104,6 +104,15 @@
                                        class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 hover:border-gray-400 text-sm"
                                        placeholder="Supplier name">
                             </div>
+
+                            <div>
+                                <label for="create_location" class="block text-xs font-semibold text-gray-700 mb-1.5">Location</label>
+                                <input type="text" 
+                                       id="create_location"
+                                       name="location" 
+                                       class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 hover:border-gray-400 text-sm"
+                                       placeholder="e.g., Storage Room A">
+                            </div>
                         </div>
                     </div>
 
