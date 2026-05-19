@@ -119,19 +119,48 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200 relative">
-                <!-- Decorative Background - Abstract Triangles -->
-                <div class="absolute inset-0 opacity-[0.04] pointer-events-none overflow-hidden">
-                    <!-- Top right triangle -->
-                    <svg class="absolute -top-10 -right-10 w-40 h-40 text-blue-400" viewBox="0 0 100 100">
-                        <polygon points="0,0 100,0 100,100" fill="currentColor"/>
+                <!-- Decorative Background - Sunburst Rays -->
+                <div class="absolute inset-0 opacity-[0.06] pointer-events-none overflow-hidden">
+                    <!-- Sunburst rays from top right -->
+                    <svg class="absolute -top-20 -right-20 w-96 h-96" viewBox="0 0 200 200">
+                        <g transform="translate(100, 100)">
+                            <!-- Rays radiating outward -->
+                            <line x1="0" y1="0" x2="0" y2="-100" stroke="#EA580C" stroke-width="3" opacity="0.7"/>
+                            <line x1="0" y1="0" x2="38" y2="-92" stroke="#EA580C" stroke-width="3" opacity="0.65"/>
+                            <line x1="0" y1="0" x2="71" y2="-71" stroke="#F97316" stroke-width="3" opacity="0.6"/>
+                            <line x1="0" y1="0" x2="92" y2="-38" stroke="#F97316" stroke-width="3" opacity="0.55"/>
+                            <line x1="0" y1="0" x2="100" y2="0" stroke="#FB923C" stroke-width="3" opacity="0.5"/>
+                            <line x1="0" y1="0" x2="92" y2="38" stroke="#FB923C" stroke-width="3" opacity="0.45"/>
+                            <line x1="0" y1="0" x2="71" y2="71" stroke="#FDBA74" stroke-width="3" opacity="0.4"/>
+                            <line x1="0" y1="0" x2="38" y2="92" stroke="#FDBA74" stroke-width="3" opacity="0.35"/>
+                            <line x1="0" y1="0" x2="0" y2="100" stroke="#FED7AA" stroke-width="3" opacity="0.3"/>
+                            <line x1="0" y1="0" x2="-38" y2="92" stroke="#FED7AA" stroke-width="3" opacity="0.25"/>
+                            <line x1="0" y1="0" x2="-71" y2="71" stroke="#FFEDD5" stroke-width="3" opacity="0.2"/>
+                            <line x1="0" y1="0" x2="-92" y2="38" stroke="#FFEDD5" stroke-width="3" opacity="0.15"/>
+                        </g>
                     </svg>
-                    <!-- Bottom left triangle -->
-                    <svg class="absolute -bottom-10 -left-10 w-32 h-32 text-indigo-400" viewBox="0 0 100 100">
-                        <polygon points="0,100 0,0 100,100" fill="currentColor"/>
+                    
+                    <!-- Sunburst rays from bottom left -->
+                    <svg class="absolute -bottom-20 -left-20 w-80 h-80" viewBox="0 0 200 200">
+                        <g transform="translate(100, 100)">
+                            <line x1="0" y1="0" x2="0" y2="100" stroke="#F97316" stroke-width="2.5" opacity="0.5"/>
+                            <line x1="0" y1="0" x2="38" y2="92" stroke="#F97316" stroke-width="2.5" opacity="0.45"/>
+                            <line x1="0" y1="0" x2="71" y2="71" stroke="#FB923C" stroke-width="2.5" opacity="0.4"/>
+                            <line x1="0" y1="0" x2="92" y2="38" stroke="#FB923C" stroke-width="2.5" opacity="0.35"/>
+                            <line x1="0" y1="0" x2="100" y2="0" stroke="#FDBA74" stroke-width="2.5" opacity="0.3"/>
+                            <line x1="0" y1="0" x2="92" y2="-38" stroke="#FDBA74" stroke-width="2.5" opacity="0.25"/>
+                            <line x1="0" y1="0" x2="71" y2="-71" stroke="#FED7AA" stroke-width="2.5" opacity="0.2"/>
+                        </g>
                     </svg>
-                    <!-- Small accent triangle -->
-                    <svg class="absolute top-1/3 right-20 w-16 h-16 text-purple-300" viewBox="0 0 100 100">
-                        <polygon points="50,0 100,100 0,100" fill="currentColor"/>
+                    
+                    <!-- Small accent rays -->
+                    <svg class="absolute top-1/3 left-1/4 w-32 h-32" viewBox="0 0 100 100">
+                        <g transform="translate(50, 50)">
+                            <line x1="0" y1="0" x2="0" y2="-40" stroke="#FB923C" stroke-width="1.5" opacity="0.4"/>
+                            <line x1="0" y1="0" x2="28" y2="-28" stroke="#FDBA74" stroke-width="1.5" opacity="0.35"/>
+                            <line x1="0" y1="0" x2="40" y2="0" stroke="#FED7AA" stroke-width="1.5" opacity="0.3"/>
+                            <line x1="0" y1="0" x2="28" y2="28" stroke="#FFEDD5" stroke-width="1.5" opacity="0.25"/>
+                        </g>
                     </svg>
                 </div>
                 

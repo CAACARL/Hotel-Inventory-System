@@ -167,22 +167,55 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-200 relative">
-                <!-- Decorative Background - Stacked Layers Pattern -->
-                <div class="absolute inset-0 opacity-[0.08] pointer-events-none overflow-hidden">
-                    <!-- Large stacked rectangles representing batches/layers -->
-                    <svg class="absolute bottom-0 right-0 w-56 h-56 text-emerald-500" viewBox="0 0 100 100">
-                        <rect x="5" y="65" width="75" height="10" rx="3" fill="currentColor"/>
-                        <rect x="10" y="52" width="75" height="10" rx="3" fill="currentColor" opacity="0.85"/>
-                        <rect x="15" y="39" width="75" height="10" rx="3" fill="currentColor" opacity="0.7"/>
-                        <rect x="20" y="26" width="75" height="10" rx="3" fill="currentColor" opacity="0.55"/>
-                        <rect x="25" y="13" width="75" height="10" rx="3" fill="currentColor" opacity="0.4"/>
+                <!-- Decorative Background - Zigzag Lines Pattern -->
+                <div class="absolute inset-0 opacity-[0.12] pointer-events-none overflow-hidden">
+                    <!-- Zigzag lines -->
+                    <svg class="absolute top-0 left-0 w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                        <!-- Horizontal zigzag lines -->
+                        <polyline points="0,80 50,60 100,80 150,60 200,80 250,60 300,80 350,60 400,80 450,60 500,80 550,60 600,80 650,60 700,80 750,60 800,80 850,60 900,80 950,60 1000,80" 
+                                  stroke="#2563EB" stroke-width="3" fill="none" opacity="0.7"/>
+                        <polyline points="0,160 50,140 100,160 150,140 200,160 250,140 300,160 350,140 400,160 450,140 500,160 550,140 600,160 650,140 700,160 750,140 800,160 850,140 900,160 950,140 1000,160" 
+                                  stroke="#3B82F6" stroke-width="3" fill="none" opacity="0.65"/>
+                        <polyline points="0,240 50,220 100,240 150,220 200,240 250,220 300,240 350,220 400,240 450,220 500,240 550,220 600,240 650,220 700,240 750,220 800,240 850,220 900,240 950,220 1000,240" 
+                                  stroke="#60A5FA" stroke-width="3" fill="none" opacity="0.6"/>
+                        <polyline points="0,320 50,300 100,320 150,300 200,320 250,300 300,320 350,300 400,320 450,300 500,320 550,300 600,320 650,300 700,320 750,300 800,320 850,300 900,320 950,300 1000,320" 
+                                  stroke="#60A5FA" stroke-width="3" fill="none" opacity="0.55"/>
+                        <polyline points="0,400 50,380 100,400 150,380 200,400 250,380 300,400 350,380 400,400 450,380 500,400 550,380 600,400 650,380 700,400 750,380 800,400 850,380 900,400 950,380 1000,400" 
+                                  stroke="#93C5FD" stroke-width="3" fill="none" opacity="0.5"/>
+                        <polyline points="0,480 50,460 100,480 150,460 200,480 250,460 300,480 350,460 400,480 450,460 500,480 550,460 600,480 650,460 700,480 750,460 800,480 850,460 900,480 950,460 1000,480" 
+                                  stroke="#93C5FD" stroke-width="3" fill="none" opacity="0.45"/>
+                        <polyline points="0,560 50,540 100,560 150,540 200,560 250,540 300,560 350,540 400,560 450,540 500,560 550,540 600,560 650,540 700,560 750,540 800,560 850,540 900,560 950,540 1000,560" 
+                                  stroke="#BFDBFE" stroke-width="3" fill="none" opacity="0.4"/>
+                        <polyline points="0,640 50,620 100,640 150,620 200,640 250,620 300,640 350,620 400,640 450,620 500,640 550,620 600,640 650,620 700,640 750,620 800,640 850,620 900,640 950,620 1000,640" 
+                                  stroke="#BFDBFE" stroke-width="3" fill="none" opacity="0.35"/>
+                        <polyline points="0,720 50,700 100,720 150,700 200,720 250,700 300,720 350,700 400,720 450,700 500,720 550,700 600,720 650,700 700,720 750,700 800,720 850,700 900,720 950,700 1000,720" 
+                                  stroke="#DBEAFE" stroke-width="3" fill="none" opacity="0.3"/>
+                        <polyline points="0,800 50,780 100,800 150,780 200,800 250,780 300,800 350,780 400,800 450,780 500,800 550,780 600,800 650,780 700,800 750,780 800,800 850,780 900,800 950,780 1000,800" 
+                                  stroke="#DBEAFE" stroke-width="3" fill="none" opacity="0.25"/>
+                        <polyline points="0,880 50,860 100,880 150,860 200,880 250,860 300,880 350,860 400,880 450,860 500,880 550,860 600,880 650,860 700,880 750,860 800,880 850,860 900,880 950,860 1000,880" 
+                                  stroke="#EFF6FF" stroke-width="3" fill="none" opacity="0.2"/>
                     </svg>
-                    <!-- Circular accent dots -->
-                    <svg class="absolute top-8 left-8 w-32 h-32 text-teal-400" viewBox="0 0 100 100">
-                        <circle cx="25" cy="25" r="12" fill="currentColor"/>
-                        <circle cx="60" cy="35" r="9" fill="currentColor" opacity="0.75"/>
-                        <circle cx="80" cy="60" r="14" fill="currentColor" opacity="0.6"/>
-                        <circle cx="40" cy="70" r="7" fill="currentColor" opacity="0.5"/>
+                    
+                    <!-- Diagonal zigzag accents -->
+                    <svg class="absolute top-0 right-0 w-80 h-80 text-blue-400" viewBox="0 0 100 100">
+                        <polyline points="0,15 10,5 20,15 30,5 40,15 50,5 60,15 70,5 80,15 90,5 100,15" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.6"/>
+                        <polyline points="0,30 10,20 20,30 30,20 40,30 50,20 60,30 70,20 80,30 90,20 100,30" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
+                        <polyline points="0,45 10,35 20,45 30,35 40,45 50,35 60,45 70,35 80,45 90,35 100,45" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
+                        <polyline points="0,60 10,50 20,60 30,50 40,60 50,50 60,60 70,50 80,60 90,50 100,60" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
+                    </svg>
+                    
+                    <!-- Bottom left zigzag accent -->
+                    <svg class="absolute bottom-0 left-0 w-64 h-64 text-blue-300" viewBox="0 0 100 100">
+                        <polyline points="0,40 10,50 20,40 30,50 40,40 50,50 60,40 70,50 80,40 90,50 100,40" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.5"/>
+                        <polyline points="0,55 10,65 20,55 30,65 40,55 50,65 60,55 70,65 80,55 90,65 100,55" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.4"/>
+                        <polyline points="0,70 10,80 20,70 30,80 40,70 50,80 60,70 70,80 80,70 90,80 100,70" 
+                                  stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
                     </svg>
                 </div>
                 
@@ -261,12 +294,9 @@
                                 <tr>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Batch Number</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Item</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Quantity</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Unit Cost</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Supplier</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Location</th>
                                     <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Expiry Date</th>
-                                    <th class="px-8 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
                                     <th class="px-8 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -291,24 +321,28 @@
                                                 </div>
                                             @endif
                                             <div>
-                                                <div class="text-sm font-bold text-gray-900">{{ $batch->item->name }}</div>
-                                                <div class="text-sm text-gray-500">{{ $batch->item->category->name }}</div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-sm font-semibold text-gray-900">{{ $batch->item->name }}</span>
+                                                    <span class="text-xs font-medium text-gray-500">({{ number_format($batch->quantity) }} {{ $batch->item->unit }})</span>
+                                                </div>
+                                                <div class="text-xs text-gray-500">{{ $batch->item->category->name }}</div>
+                                                <div class="flex items-center gap-2 mt-0.5">
+                                                    <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-md border
+                                                        @switch($batch->status)
+                                                            @case('active') bg-green-50 text-green-700 border-green-200 @break
+                                                            @case('expired') bg-red-50 text-red-700 border-red-200 @break
+                                                            @default bg-gray-50 text-gray-700 border-gray-200 @break
+                                                        @endswitch">
+                                                        {{ ucfirst($batch->status) }}
+                                                    </span>
+                                                    @if($batch->unit_cost)
+                                                        <span class="text-xs text-gray-500">
+                                                            Unit: ₱{{ number_format($batch->unit_cost, 2) }} • Total: ₱{{ number_format($batch->quantity * $batch->unit_cost, 2) }}
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-gray-900">{{ number_format($batch->quantity) }} {{ $batch->item->unit }}</div>
-                                        @if($batch->unit_cost)
-                                            <div class="text-sm text-gray-500">Total: ₱{{ number_format($batch->quantity * $batch->unit_cost, 2) }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
-                                        @if($batch->unit_cost)
-                                            <div class="text-sm font-bold text-gray-900">₱{{ number_format($batch->unit_cost, 2) }}</div>
-                                            <div class="text-sm text-gray-500">per {{ $batch->item->unit }}</div>
-                                        @else
-                                            <div class="text-sm text-gray-500">Not set</div>
-                                        @endif
                                     </td>
                                     <td class="px-8 py-6 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $batch->supplier ?? 'N/A' }}</div>
@@ -330,16 +364,6 @@
                                             <div class="text-sm text-gray-500">No expiry</div>
                                         @endif
                                     </td>
-                                    <td class="px-8 py-6 whitespace-nowrap">
-                                        <span class="inline-flex px-3 py-1 text-xs font-bold rounded-full
-                                            @switch($batch->status)
-                                                @case('active') bg-green-100 text-green-800 @break
-                                                @case('expired') bg-red-100 text-red-800 @break
-                                                @default bg-gray-100 text-gray-800 @break
-                                            @endswitch">
-                                            {{ ucfirst($batch->status) }}
-                                        </span>
-                                    </td>
                                     <td class="px-8 py-6 whitespace-nowrap text-center text-sm font-medium">
                                         <a href="{{ route('batches.show', $batch) }}"
                                            class="inline-flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm font-medium rounded-lg transition-all duration-200">
@@ -350,7 +374,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="px-8 py-12 text-center text-gray-500">
+                                    <td colspan="6" class="px-8 py-12 text-center text-gray-500">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                                             <h3 class="text-lg font-semibold text-gray-900 mb-2">No batches found</h3>

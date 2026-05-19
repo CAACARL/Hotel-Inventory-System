@@ -508,9 +508,30 @@
 </div>
 
 <script>
+let isSubmittingCategory = false;
+
 function submitQuickCategory() {
+    // Prevent multiple submissions
+    if (isSubmittingCategory) {
+        return false;
+    }
+    
+    isSubmittingCategory = true;
+    
     const form = document.getElementById('quickCreateCategoryForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
     const formData = new FormData(form);
+    
+    // Disable button and show loading state
+    submitBtn.disabled = true;
+    const originalBtnContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = `
+        <svg class="animate-spin w-4 h-4 mr-1.5 inline" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Creating...
+    `;
     
     fetch('{{ route('categories.store') }}', {
         method: 'POST',
@@ -592,14 +613,29 @@ function submitQuickCategory() {
             setTimeout(() => {
                 const closeBtn = document.querySelector('[x-show="quickCreateCategoryModal"] button[type="button"]');
                 if (closeBtn) closeBtn.click();
+                
+                // Reset flag after modal closes
+                isSubmittingCategory = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnContent;
             }, 100);
         } else {
+            // Re-enable button on error
+            isSubmittingCategory = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
             alert('Error: ' + (data.message || 'Unknown error'));
         }
     })
     .catch(error => {
+        // Re-enable button on error
+        isSubmittingCategory = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnContent;
         console.error('Error:', error);
         alert('Error creating category. Please try again.');
     });
+    
+    return false;
 }
 </script>

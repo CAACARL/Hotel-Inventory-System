@@ -5,13 +5,13 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200 overflow-hidden h-80 flex flex-col relative">
         <!-- Decorative Background Pattern -->
         <div class="absolute inset-0 opacity-[0.15] pointer-events-none">
-            <svg class="absolute top-32 right-8 w-32 h-32 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="absolute top-32 right-8 w-32 h-32 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
             </svg>
         </div>
         
         <!-- Subtle Gradient Accent -->
-        <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-50 to-transparent rounded-full -mr-20 -mt-20"></div>
+        <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-100 to-transparent rounded-full -mr-20 -mt-20"></div>
         
         <!-- Department Header - Fixed Height -->
         <div class="flex items-center justify-between p-6 border-b border-gray-100 h-24 flex-shrink-0 relative z-10">

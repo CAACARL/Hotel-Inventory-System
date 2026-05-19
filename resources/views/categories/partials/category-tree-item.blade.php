@@ -2,18 +2,12 @@
         expanded: {{ $category->children->count() > 0 ? 'true' : 'false' }},
         showAddForm: false,
         newSubcategoryName: '',
-        newSubcategoryDescription: ''
+        newSubcategoryDescription: '',
+        dropdownOpen: false
     }" 
      @toggle-all-categories.window="expanded = $event.detail.expanded"
      class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden category-item depth-{{ min($level, 3) }} mb-3 relative transition-shadow duration-200 hover:shadow-md" 
      style="margin-left: {{ min($level * 2.5, 7.5) }}rem;">
-    
-    <!-- Decorative Background - Large Tag Silhouette -->
-    <div class="absolute bottom-0 right-0 opacity-5 pointer-events-none">
-        <svg class="w-32 h-32 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-        </svg>
-    </div>
     
     <!-- Category Header -->
     <div class="flex items-center justify-between p-4 sm:p-5 {{ $category->children->count() > 0 ? 'cursor-pointer hover:bg-gray-50' : '' }} transition-colors duration-200 relative z-10"
@@ -84,54 +78,70 @@
             </div>
         </div>
         
-        <!-- Action Buttons -->
-        <div class="flex items-center space-x-1 flex-shrink-0 ml-3">
-            <button @click.stop="selectedCategory = {{ $category->toJson() }}; viewModal = true" 
-                    class="inline-flex items-center p-2 sm:px-3 sm:py-2 text-blue-600 hover:bg-blue-50 text-sm font-medium rounded-lg transition-colors"
-                    title="View">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                </svg>
-                <span class="hidden sm:inline ml-1.5">View</span>
-            </button>
-            
-            <button @click.stop="selectedCategory = {{ $category->toJson() }}; editModal = true" 
-                    class="inline-flex items-center p-2 sm:px-3 sm:py-2 text-indigo-600 hover:bg-indigo-50 text-sm font-medium rounded-lg transition-colors"
-                    title="Edit">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                <span class="hidden sm:inline ml-1.5">Edit</span>
-            </button>
-            
-            <button @click.stop="showAddForm = !showAddForm; expanded = true; $nextTick(() => { if(showAddForm) $refs.subcategoryNameInput?.focus(); })" 
-                    class="inline-flex items-center p-2 sm:px-3 sm:py-2 text-green-600 hover:bg-green-50 text-sm font-medium rounded-lg transition-colors"
-                    title="Add subcategory">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                <span class="hidden sm:inline ml-1.5">Add Sub</span>
-            </button>
-            
-            @if($category->items_count == 0 && $category->children->count() == 0)
-                <button @click.stop="deleteCategoryId = {{ $category->id }}; deleteCategoryName = '{{ $category->name }}'; deleteModal = true" 
-                        class="inline-flex items-center p-2 sm:px-3 sm:py-2 text-gray-600 hover:bg-gray-100 text-sm font-medium rounded-lg transition-colors"
-                        title="Archive">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
+        <!-- Action Buttons - Show on Click -->
+        <div class="flex items-center space-x-1 flex-shrink-0 ml-3" x-data="{ actionsOpen: false }">
+            <!-- Actions Container - Hidden by default, shows on click -->
+            <div x-show="actionsOpen" 
+                 @click.away="actionsOpen = false"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 translate-x-2"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-x-0"
+                 x-transition:leave-end="opacity-0 translate-x-2"
+                 class="flex items-center space-x-1">
+                <button @click.stop="selectedCategory = {{ $category->toJson() }}; viewModal = true; actionsOpen = false"
+                        class="inline-flex items-center px-3 py-1.5 text-blue-700 hover:bg-blue-50 text-xs font-medium rounded-lg transition-colors border border-blue-200">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
-                    <span class="hidden sm:inline ml-1.5">Archive</span>
+                    <span class="hidden sm:inline">View</span>
                 </button>
-            @else
-                <button disabled 
-                        class="inline-flex items-center p-2 sm:px-3 sm:py-2 text-gray-400 cursor-not-allowed text-sm font-medium rounded-lg opacity-50"
-                        title="Cannot delete: has items or subcategories">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+
+                <button @click.stop="selectedCategory = {{ $category->toJson() }}; editModal = true; actionsOpen = false"
+                        class="inline-flex items-center px-3 py-1.5 text-indigo-700 hover:bg-indigo-50 text-xs font-medium rounded-lg transition-colors border border-indigo-200">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
+                    <span class="hidden sm:inline">Edit</span>
                 </button>
-            @endif
+
+                <button @click.stop="showAddForm = !showAddForm; expanded = true; actionsOpen = false; $nextTick(() => { if(showAddForm) $refs.subcategoryNameInput?.focus(); })"
+                        class="inline-flex items-center px-3 py-1.5 text-green-700 hover:bg-green-50 text-xs font-medium rounded-lg transition-colors border border-green-200">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    <span class="hidden sm:inline">Add Sub</span>
+                </button>
+
+                @if($category->items_count == 0 && $category->children->count() == 0)
+                    <button @click.stop="deleteCategoryId = {{ $category->id }}; deleteCategoryName = '{{ $category->name }}'; deleteModal = true; actionsOpen = false"
+                            class="inline-flex items-center px-3 py-1.5 text-gray-700 hover:bg-gray-100 text-xs font-medium rounded-lg transition-colors border border-gray-300">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Archive</span>
+                    </button>
+                @else
+                    <button disabled
+                            class="inline-flex items-center px-3 py-1.5 text-gray-400 cursor-not-allowed text-xs font-medium rounded-lg opacity-50 border border-gray-300"
+                            title="Cannot archive: has items or subcategories">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Archive</span>
+                    </button>
+                @endif
+            </div>
+            
+            <!-- Three-dot button -->
+            <button @click.stop="actionsOpen = !actionsOpen" 
+                    class="inline-flex items-center px-3 py-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-all duration-200 text-xs font-medium border border-gray-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                </svg>
+            </button>
         </div>
     </div>
 
