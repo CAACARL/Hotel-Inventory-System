@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Subcategory;
+use App\Models\ActivityLog;
 
 class CategoryController extends Controller
 {
@@ -54,7 +55,7 @@ class CategoryController extends Controller
                 return response()->json(['success' => false, 'message' => $message], 422);
             }
             
-            return redirect()->route('categories.index')
+            return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
                 ->with('warning', $message);
         }
 
@@ -66,6 +67,8 @@ class CategoryController extends Controller
         ]);
 
         $category = Category::create($request->all());
+
+        ActivityLog::log('created', $category);
 
         // Return JSON for AJAX requests
         if ($request->wantsJson() || $request->ajax()) {
@@ -82,7 +85,7 @@ class CategoryController extends Controller
         }
 
         $parentName = $category->parent ? $category->parent->name : 'root level';
-        return redirect()->route('categories.index')
+        return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Category "' . $request->name . '" created successfully under ' . $parentName . '.');
     }
 
@@ -120,7 +123,7 @@ class CategoryController extends Controller
         $existingCategory = $query->first();
         if ($existingCategory) {
             $parentName = $request->parent_id ? Category::find($request->parent_id)->name : 'root level';
-            return redirect()->route('categories.index')
+            return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Category "' . $request->name . '" already exists in ' . $parentName . '. Please choose a different name.');
         }
 
@@ -128,7 +131,7 @@ class CategoryController extends Controller
         if ($request->parent_id) {
             $descendants = $this->getDescendantIds($category);
             if ($request->parent_id == $category->id || in_array($request->parent_id, $descendants)) {
-                return redirect()->route('categories.index')
+                return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
                     ->with('error', 'Cannot set parent to self or descendant category.');
             }
         }
@@ -140,28 +143,37 @@ class CategoryController extends Controller
             'is_active' => 'boolean'
         ]);
 
-        $category->update($request->all());
+        // Capture original values BEFORE updating
+        $updateData = $request->only(['name', 'description', 'parent_id', 'is_active']);
+        $originalValues = $category->only(array_keys($updateData));
 
-        return redirect()->route('categories.index')
+        $category->update($updateData);
+
+        ActivityLog::log('updated', $category, $originalValues, $updateData);
+
+        return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Category "' . $request->name . '" updated successfully.');
     }
 
-    public function destroy(Category $category)
+    public function destroy(Request $request, Category $category)
     {
         $totalItems = $this->countItemsRecursively($category);
         if ($totalItems > 0) {
-            return redirect()->route('categories.index')
+            return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Cannot archive "' . $category->name . '" — it has ' . $totalItems . ' items. Remove or reassign them first.');
         }
 
         if ($category->children()->count() > 0) {
-            return redirect()->route('categories.index')
+            return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Cannot archive "' . $category->name . '" — it has subcategories. Archive or remove them first.');
         }
 
         $categoryName = $category->name;
         $category->delete();
-        return redirect()->route('categories.index')
+        
+        ActivityLog::log('archived', $category);
+        
+        return redirect()->route('categories.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Category "' . $categoryName . '" has been archived.');
     }
 
@@ -175,6 +187,9 @@ class CategoryController extends Controller
     {
         $category = Category::onlyTrashed()->findOrFail($id);
         $category->restore();
+        
+        ActivityLog::log('unarchived', $category);
+        
         return redirect()->route('categories.archived')
             ->with('success', 'Category "' . $category->name . '" has been restored.');
     }

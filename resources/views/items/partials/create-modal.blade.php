@@ -193,8 +193,13 @@
                                 methodField.type = 'hidden';
                                 methodField.name = '_method';
                                 methodField.value = 'DELETE';
+                                const pageField = document.createElement('input');
+                                pageField.type = 'hidden';
+                                pageField.name = 'page';
+                                pageField.value = '{{ request("page", 1) }}';
                                 form.appendChild(csrfToken);
                                 form.appendChild(methodField);
+                                form.appendChild(pageField);
                                 document.body.appendChild(form);
                                 form.submit();
                             "
@@ -259,8 +264,9 @@
             </div>
             
             <!-- Modal Body -->
-            <form id="createItemForm" action="{{ route('items.store') }}" method="POST" enctype="multipart/form-data" class="p-4">
+            <form action="{{ route('items.store') }}" method="POST" enctype="multipart/form-data" class="p-4">
                 @csrf
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 
                 <div class="space-y-3">
                     <div>

@@ -48,6 +48,7 @@
             <!-- Modal Body -->
             <form action="{{ route('users.store') }}" method="POST" class="p-4" @submit="if (!validateForm()) { $event.preventDefault(); }">
                 @csrf
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 <div class="space-y-3">
                     <div>
                         <label for="modal_name" class="block text-xs font-semibold text-gray-700 mb-1.5">Full Name</label>
@@ -253,8 +254,13 @@
                                 methodField.type = 'hidden';
                                 methodField.name = '_method';
                                 methodField.value = 'DELETE';
+                                const pageField = document.createElement('input');
+                                pageField.type = 'hidden';
+                                pageField.name = 'page';
+                                pageField.value = '{{ request("page", 1) }}';
                                 form.appendChild(csrfToken);
                                 form.appendChild(methodField);
+                                form.appendChild(pageField);
                                 document.body.appendChild(form);
                                 form.submit();
                             "
@@ -284,8 +290,10 @@
      style="display: none;"
      x-init="$watch('viewModal', value => { document.body.classList.toggle('modal-open', value) })">
     
+    <!-- Enhanced Backdrop with Blur -->
     <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="viewModal = false"></div>
     
+    <!-- Modal Content -->
     <div class="flex items-center justify-center min-h-screen px-4 py-6">
         <div x-show="viewModal"
              x-transition:enter="transition ease-out duration-300 transform"
@@ -296,6 +304,7 @@
              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
              class="modal-container bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto relative z-10 border border-blue-200">
             
+            <!-- Modern Modal Header with Gradient -->
             <div class="modal-header-gradient flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);">
                 <div class="flex items-center">
                     <div class="w-9 h-9 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-3 backdrop-blur-sm">
@@ -316,64 +325,38 @@
                 </button>
             </div>
             
+            <!-- Modal Body -->
             <div class="p-4">
                 <template x-if="selectedUser">
                     <div class="space-y-3">
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 border border-blue-200">
-                            <div class="flex items-center mb-2">
-                                <div class="w-6 h-6 rounded-lg flex items-center justify-center mr-2" style="background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);">
-                                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-blue-900" x-text="selectedUser?.name"></h4>
-                                    <p class="text-xs text-blue-700">User ID: <span x-text="selectedUser?.id"></span></p>
-                                </div>
-                            </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">User Name</label>
+                            <div class="w-full px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-gray-900 font-medium text-sm" x-text="selectedUser?.name"></div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Email Address</label>
+                            <div class="w-full px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-gray-900 font-medium text-sm" x-text="selectedUser?.email"></div>
                         </div>
                         
-                        <div class="grid grid-cols-1 gap-3">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
-                                <div class="bg-gray-50 rounded-xl p-2 border border-gray-200">
-                                    <p class="text-xs text-gray-900" x-text="selectedUser?.email"></p>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Department</label>
-                                <div class="bg-gray-50 rounded-xl p-2 border border-gray-200">
-                                    <p class="text-xs text-gray-900" x-text="selectedUser?.department"></p>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Role</label>
-                                    <div class="bg-gray-50 rounded-xl p-2 border border-gray-200">
-                                        <span class="inline-flex px-2 py-0.5 text-xs font-bold rounded-full capitalize" 
-                                              :class="selectedUser?.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'"
-                                              x-text="selectedUser?.role"></span>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
-                                    <div class="bg-gray-50 rounded-xl p-2 border border-gray-200">
-                                        <span class="inline-flex px-2 py-0.5 text-xs font-bold rounded-full" 
-                                              :class="selectedUser?.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                                            <div class="w-1.5 h-1.5 rounded-full mr-1.5 mt-0.5" 
-                                                 :class="selectedUser?.is_active ? 'bg-green-500' : 'bg-red-500'"></div>
-                                            <span x-text="selectedUser?.is_active ? 'Active' : 'Inactive'"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Department</label>
+                            <div class="w-full px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-gray-900 font-medium text-sm" x-text="selectedUser?.department"></div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Role</label>
+                            <div class="w-full px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-gray-900 font-medium text-sm capitalize" x-text="selectedUser?.role"></div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Status</label>
+                            <div class="w-full px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-gray-900 font-medium text-sm" x-text="selectedUser?.is_active ? 'Active' : 'Inactive'"></div>
                         </div>
                     </div>
                 </template>
                 
+                <!-- Modern Modal Footer -->
                 <div class="flex justify-end mt-4 pt-4 border-t border-gray-200">
                     <button type="button" 
                             @click="viewModal = false"

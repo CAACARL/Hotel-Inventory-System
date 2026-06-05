@@ -100,7 +100,9 @@
 
 <div x-data="{ 
     createModal: false,
-    searchModal: false
+    viewModal: false,
+    searchModal: false,
+    selectedBatch: null
 }">
 <x-app-layout>
     <div class="py-4 sm:py-8">
@@ -269,7 +271,7 @@
                                 @endif
                             </div>
                             <a href="{{ route('batches.show', $batch) }}"
-                               class="inline-flex items-center px-3 py-1.5 text-blue-600 hover:bg-blue-50 text-xs font-medium rounded-lg border border-blue-200 transition-colors">
+                               class="inline-flex items-center px-3 py-1.5 text-blue-700 hover:bg-blue-50 text-xs font-medium rounded-lg transition-colors border border-blue-200">
                                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 View
                             </a>
@@ -366,9 +368,9 @@
                                     </td>
                                     <td class="px-8 py-6 whitespace-nowrap text-center text-sm font-medium">
                                         <a href="{{ route('batches.show', $batch) }}"
-                                           class="inline-flex items-center px-4 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 text-sm font-medium rounded-lg transition-all duration-200">
-                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                            View
+                                           class="inline-flex items-center px-3 py-1.5 text-blue-700 hover:bg-blue-50 text-xs font-medium rounded-lg transition-colors border border-blue-200">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                            <span class="hidden sm:inline">View</span>
                                         </a>
                                     </td>
                                 </tr>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
 
 class DepartmentController extends Controller
 {
@@ -35,7 +36,7 @@ class DepartmentController extends Controller
         // Check for duplicate department name first
         $existingDepartment = Department::where('name', $request->name)->first();
         if ($existingDepartment) {
-            return redirect()->route('departments.index')
+            return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Department "' . $request->name . '" already exists. Please choose a different name.');
         }
 
@@ -47,7 +48,10 @@ class DepartmentController extends Controller
 
         Department::create($request->all());
 
-        return redirect()->route('departments.index')
+        $department = Department::where('name', $request->name)->first();
+        ActivityLog::log('created', $department);
+
+        return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Department "' . $request->name . '" created successfully.');
     }
 
@@ -70,7 +74,7 @@ class DepartmentController extends Controller
             ->where('id', '!=', $department->id)
             ->first();
         if ($existingDepartment) {
-            return redirect()->route('departments.index')
+            return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Department "' . $request->name . '" already exists. Please choose a different name.');
         }
 
@@ -82,32 +86,39 @@ class DepartmentController extends Controller
 
         $updateData = $request->only(['name', 'description', 'location']);
 
+        $oldValues = $department->only(['name', 'description', 'location']);
         $department->update($updateData);
+        
+        ActivityLog::log('updated', $department, $oldValues, $updateData);
 
-        return redirect()->route('departments.index')
+        return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Department "' . $request->name . '" updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function toggleActive(Department $department)
+    public function toggleActive(Request $request, Department $department)
     {
+        $oldStatus = $department->is_active;
         $department->update(['is_active' => !$department->is_active]);
         $status = $department->is_active ? 'activated' : 'deactivated';
-        return redirect()->route('departments.index')
+        
+        ActivityLog::log($status, $department, ['is_active' => $oldStatus], ['is_active' => $department->is_active]);
+        
+        return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Department "' . $department->name . '" has been ' . $status . '.');
     }
-    public function destroy(Department $department)
+    public function destroy(Request $request, Department $department)
     {
         if ($department->items()->count() > 0) {
-            return redirect()->route('departments.index')
+            return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Cannot delete department "' . $department->name . '" because it has ' . $department->items()->count() . ' items. Please reassign the items to another department first.');
         }
 
         $departmentName = $department->name;
         $department->delete();
-        return redirect()->route('departments.index')
+        return redirect()->route('departments.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Department "' . $departmentName . '" deleted successfully.');
     }
 }

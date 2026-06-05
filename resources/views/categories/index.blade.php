@@ -296,8 +296,13 @@
                                         methodField.type = 'hidden';
                                         methodField.name = '_method';
                                         methodField.value = 'DELETE';
+                                        const pageField = document.createElement('input');
+                                        pageField.type = 'hidden';
+                                        pageField.name = 'page';
+                                        pageField.value = '{{ request("page", 1) }}';
                                         form.appendChild(csrfToken);
                                         form.appendChild(methodField);
+                                        form.appendChild(pageField);
                                         document.body.appendChild(form);
                                         form.submit();
                                     "
@@ -372,6 +377,7 @@
                     <!-- Modal Body with Modern Form -->
                     <form action="{{ route('categories.store') }}" method="POST" class="p-4">
                         @csrf
+                        <input type="hidden" name="page" value="{{ request('page', 1) }}">
                         <div class="space-y-3">
                             <div>
                                 <label for="modal_name" class="block text-xs font-semibold text-gray-700 mb-1.5">Category Name</label>
@@ -580,6 +586,7 @@
                     <form :action="'/categories/' + selectedCategory?.id" method="POST" class="p-4" x-show="selectedCategory">
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="page" value="{{ request('page', 1) }}">
                         <div class="space-y-3">
                             <div>
                                 <label for="edit_name" class="block text-xs font-semibold text-gray-700 mb-1.5">Category Name</label>

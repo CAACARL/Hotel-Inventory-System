@@ -49,6 +49,7 @@
             <form :action="'/items/' + selectedItem?.id" method="POST" class="p-4" x-show="selectedItem" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 
                 <div class="space-y-3">
                     <div>
@@ -244,6 +245,7 @@
 
             <form :action="'/items/' + itemId + '/disposal'" method="POST" class="p-4">
                 @csrf
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Quantity to Dispose <span class="text-red-500">*</span></label>
@@ -328,6 +330,7 @@
             <!-- Modal Body with Modern Form -->
             <form :action="'/items/' + selectedItem?.id + '/borrow'" method="POST" class="p-4" x-show="selectedItem">
                 @csrf
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Item</label>
@@ -455,6 +458,7 @@
             <template x-if="selectedItem">
                 <form :action="'/items/' + selectedItem.id + '/return'" method="POST" class="p-4">
                     @csrf
+                    <input type="hidden" name="page" value="{{ request('page', 1) }}">
                     <div class="space-y-3">
                         <!-- Enhanced Item Info Card -->
                         <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-3 border border-green-200">

@@ -78,8 +78,8 @@
             </div>
         </div>
         
-        <!-- Action Buttons - Show on Click -->
-        <div class="flex items-center space-x-1 flex-shrink-0 ml-3" x-data="{ actionsOpen: false }">
+        <!-- Action Buttons - Desktop: Show on Click, Mobile: Always Show -->
+        <div class="hidden sm:flex items-center space-x-1 flex-shrink-0 ml-3" x-data="{ actionsOpen: false }">
             <!-- Actions Container - Hidden by default, shows on click -->
             <div x-show="actionsOpen" 
                  @click.away="actionsOpen = false"
@@ -96,7 +96,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
-                    <span class="hidden sm:inline">View</span>
+                    <span>View</span>
                 </button>
 
                 <button @click.stop="selectedCategory = {{ $category->toJson() }}; editModal = true; actionsOpen = false"
@@ -104,7 +104,7 @@
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
-                    <span class="hidden sm:inline">Edit</span>
+                    <span>Edit</span>
                 </button>
 
                 <button @click.stop="showAddForm = !showAddForm; expanded = true; actionsOpen = false; $nextTick(() => { if(showAddForm) $refs.subcategoryNameInput?.focus(); })"
@@ -112,7 +112,7 @@
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    <span class="hidden sm:inline">Add Sub</span>
+                    <span>Add Sub</span>
                 </button>
 
                 @if($category->items_count == 0 && $category->children->count() == 0)
@@ -121,7 +121,7 @@
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
                         </svg>
-                        <span class="hidden sm:inline">Archive</span>
+                        <span>Archive</span>
                     </button>
                 @else
                     <button disabled
@@ -130,7 +130,7 @@
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8l1 12a2 2 0 002 2h8a2 2 0 002-2l1-12M10 12v4m4-4v4"></path>
                         </svg>
-                        <span class="hidden sm:inline">Archive</span>
+                        <span>Archive</span>
                     </button>
                 @endif
             </div>
@@ -142,6 +142,55 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
                 </svg>
             </button>
+        </div>
+    </div>
+
+    <!-- Mobile Actions Bar - Always visible on mobile -->
+    <div class="sm:hidden border-t border-gray-200 bg-gray-50 p-3">
+        <div class="grid grid-cols-2 gap-2">
+            <button @click.stop="selectedCategory = {{ $category->toJson() }}; viewModal = true"
+                    class="inline-flex items-center justify-center px-3 py-2 text-blue-700 hover:bg-blue-50 text-xs font-medium rounded-lg transition-colors border border-blue-200">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+                View
+            </button>
+
+            <button @click.stop="selectedCategory = {{ $category->toJson() }}; editModal = true"
+                    class="inline-flex items-center justify-center px-3 py-2 text-indigo-700 hover:bg-indigo-50 text-xs font-medium rounded-lg transition-colors border border-indigo-200">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Edit
+            </button>
+
+            <button @click.stop="showAddForm = !showAddForm; expanded = true; $nextTick(() => { if(showAddForm) $refs.subcategoryNameInput?.focus(); })"
+                    class="inline-flex items-center justify-center px-3 py-2 text-green-700 hover:bg-green-50 text-xs font-medium rounded-lg transition-colors border border-green-200">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add Sub
+            </button>
+
+            @if($category->items_count == 0 && $category->children->count() == 0)
+                <button @click.stop="deleteCategoryId = {{ $category->id }}; deleteCategoryName = '{{ $category->name }}'; deleteModal = true"
+                        class="inline-flex items-center justify-center px-3 py-2 text-red-700 hover:bg-red-50 text-xs font-medium rounded-lg transition-colors border border-red-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Archive
+                </button>
+            @else
+                <button disabled
+                        class="inline-flex items-center justify-center px-3 py-2 text-gray-400 cursor-not-allowed text-xs font-medium rounded-lg opacity-50 border border-gray-300"
+                        title="Cannot archive: has items or subcategories">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Archive
+                </button>
+            @endif
         </div>
     </div>
 
@@ -158,6 +207,7 @@
         <form action="{{ route('categories.store') }}" method="POST" class="space-y-4">
             @csrf
             <input type="hidden" name="parent_id" value="{{ $category->id }}">
+            <input type="hidden" name="page" value="{{ request('page', 1) }}">
             
             <div class="flex items-center space-x-3 mb-4">
                 <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">

@@ -54,6 +54,7 @@
                       ">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="page" value="{{ request('page', 1) }}">
                     <div class="space-y-3">
                         <div>
                             <label for="edit_name" class="block text-xs font-semibold text-gray-700 mb-1.5">Full Name</label>

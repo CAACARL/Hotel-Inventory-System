@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\BorrowedItem;
+use App\Models\ActivityLog;
 
 class ItemController extends Controller
 {
@@ -70,7 +71,7 @@ class ItemController extends Controller
             $category = Category::find($request->category_id);
             $department = \App\Models\Department::find($request->department_id);
 
-            return redirect()->route('items.index')
+            return redirect()->route('items.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'An item named "' . $request->name . '" already exists in category "' . $category->name . '" and department "' . ($department ? $department->name : 'None') . '". Consider updating the existing item instead.');
         }
 
@@ -100,7 +101,9 @@ class ItemController extends Controller
             Item::create($itemData);
         });
 
-        return redirect()->route('items.index')
+        ActivityLog::log('created', Item::where('name', $request->name)->first());
+
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item "' . $request->name . '" created successfully.');
     }
 
@@ -138,7 +141,7 @@ class ItemController extends Controller
             $category = Category::find($request->category_id);
             $department = \App\Models\Department::find($request->department_id);
             
-            return redirect()->route('items.index')
+            return redirect()->route('items.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'An item named "' . $request->name . '" already exists in category "' . $category->name . '" and department "' . ($department ? $department->name : 'None') . '". Consider updating the existing item instead.');
         }
 
@@ -164,27 +167,35 @@ class ItemController extends Controller
             $updateData['image'] = $request->file('image')->store('item-images', 'public');
         }
 
+        // Capture original values BEFORE updating
+        $originalValues = $item->only(array_keys($updateData));
+
         $item->update($updateData);
 
-        return redirect()->route('items.index')
+        ActivityLog::log('updated', $item, $originalValues, $updateData);
+
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item "' . $request->name . '" updated successfully.');
     }
 
-    public function destroy(Item $item)
+    public function destroy(Request $request, Item $item)
     {
         if ($item->quantity > 0) {
-            return redirect()->route('items.index')
+            return redirect()->route('items.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Cannot archive "' . $item->name . '" — it still has ' . $item->quantity . ' ' . $item->unit . ' in stock. Deplete the stock first.');
         }
 
         if ($item->borrowed_quantity > 0) {
-            return redirect()->route('items.index')
+            return redirect()->route('items.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'Cannot archive "' . $item->name . '" — ' . $item->borrowed_quantity . ' ' . $item->unit . ' are currently borrowed. Wait for them to be returned first.');
         }
 
         $itemName = $item->name;
         $item->delete();
-        return redirect()->route('items.index')
+        
+        ActivityLog::log('archived', $item);
+        
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item "' . $itemName . '" has been archived.');
     }
 
@@ -198,6 +209,9 @@ class ItemController extends Controller
     {
         $item = Item::onlyTrashed()->findOrFail($id);
         $item->restore();
+        
+        ActivityLog::log('unarchived', $item);
+        
         return redirect()->route('items.archived')
             ->with('success', 'Item "' . $item->name . '" has been restored to inventory.');
     }
@@ -282,7 +296,7 @@ class ItemController extends Controller
             );
         }
 
-        return redirect()->route('items.index')
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item borrowed successfully by ' . $request->borrower_name . ' from ' . $request->borrower_department . '.');
     }
 
@@ -318,7 +332,7 @@ class ItemController extends Controller
             $item->update(['status' => 'available']);
         }
 
-        return redirect()->route('items.index')
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item "' . $item->name . '" replenished successfully. Added ' . number_format($request->quantity) . ' ' . $item->unit . '.');
     }
 
@@ -359,17 +373,17 @@ class ItemController extends Controller
             ]);
         }
 
-        return redirect()->route('items.index')
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item marked for disposal successfully.');
     }
 
-    public function return(Item $item)
+    public function return(Request $request, Item $item)
     {
         // Get borrowed quantity that hasn't been returned yet by the current user
         $borrowedQuantity = $this->getBorrowedQuantityByUser($item, auth()->id());
         
         if ($borrowedQuantity <= 0) {
-            return redirect()->route('items.index')
+            return redirect()->route('items.index', ['page' => $request->input('page', 1)])
                 ->with('error', 'You have no borrowed items of this type to return.');
         }
         
@@ -381,7 +395,7 @@ class ItemController extends Controller
         $borrowedQuantity = $this->getBorrowedQuantityByUser($item, auth()->id());
         
         if ($borrowedQuantity <= 0) {
-            return redirect()->route('items.index')
+            return redirect()->route('items.index', ['page' => $request->input('page', 1)])
                 ->with('error', 'You have no borrowed items of this type to return.');
         }
         
@@ -438,7 +452,7 @@ class ItemController extends Controller
             auth()->id()
         );
 
-        return redirect()->route('items.index')
+        return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item returned successfully.');
     }
 

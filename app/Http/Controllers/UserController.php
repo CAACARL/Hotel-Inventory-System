@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\Models\ActivityLog;
 
 class UserController extends Controller
 {
@@ -49,7 +50,7 @@ class UserController extends Controller
         // Check for duplicate email first
         $existingUser = User::where('email', $request->email)->first();
         if ($existingUser) {
-            return redirect()->route('users.index')
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'A user with email "' . $request->email . '" already exists. Please use a different email address.');
         }
 
@@ -78,17 +79,19 @@ class UserController extends Controller
                 \Log::error('Failed to send welcome email to ' . $user->email . ': ' . $e->getMessage());
             }
 
-            return redirect()->route('users.index')
+            ActivityLog::log('created', $user);
+
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->with('success', 'User "' . $user->name . '" created successfully with email: ' . $user->email);
                 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->route('users.index')
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->withErrors($e->validator)
                 ->withInput()
                 ->with('error', 'Validation failed. Please check the form and try again.');
                 
         } catch (\Exception $e) {
-            return redirect()->route('users.index')
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->with('error', 'Failed to create user: ' . $e->getMessage());
         }
     }
@@ -119,7 +122,7 @@ class UserController extends Controller
             ->where('id', '!=', $user->id)
             ->first();
         if ($existingUser) {
-            return redirect()->route('users.index')
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'A user with email "' . $request->email . '" already exists. Please use a different email address.');
         }
 
@@ -145,38 +148,46 @@ class UserController extends Controller
             $updateData['password'] = Hash::make($request->password);
         }
 
+        $oldValues = $user->only(['name', 'email', 'role', 'department']);
         $user->update($updateData);
+        
+        ActivityLog::log('updated', $user, $oldValues, $updateData);
 
-        return redirect()->route('users.index')
+        return redirect()->route('users.index', ['page' => $request->input('page', 1)])
             ->with('success', 'User "' . $user->name . '" updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
         // Prevent deleting the current user
         if ($user->id === auth()->id()) {
-            return redirect()->route('users.index')
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'You cannot delete your own account. Please ask another administrator to delete your account if needed.');
         }
 
         $userName = $user->name;
         $user->delete();
-        return redirect()->route('users.index')
+        return redirect()->route('users.index', ['page' => $request->input('page', 1)])
             ->with('success', 'User "' . $userName . '" deleted successfully.');
     }
 
-    public function toggleActive(User $user)
+    public function toggleActive(Request $request, User $user)
     {
         if ($user->id === auth()->id()) {
-            return redirect()->route('users.index')
+            return redirect()->route('users.index', ['page' => $request->input('page', 1)])
                 ->with('warning', 'You cannot deactivate your own account.');
         }
+        
+        $oldStatus = $user->is_active;
         $user->update(['is_active' => !$user->is_active]);
         $status = $user->is_active ? 'activated' : 'deactivated';
-        return redirect()->route('users.index')
+        
+        ActivityLog::log($status, $user, ['is_active' => $oldStatus], ['is_active' => $user->is_active]);
+        
+        return redirect()->route('users.index', ['page' => $request->input('page', 1)])
             ->with('success', 'User "' . $user->name . '" has been ' . $status . '.');
     }
 }

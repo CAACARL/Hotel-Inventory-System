@@ -128,7 +128,7 @@
         </div>
 
         {{-- DESKTOP TABLE LAYOUT --}}
-        <div class="hidden sm:block overflow-x-auto">
+        <div class="hidden sm:block overflow-x-auto min-h-[900px]">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -143,7 +143,7 @@
                     @php 
                         $userBorrowedQuantity = $item->getBorrowedQuantityByUser(auth()->id());
                         $totalItems = $items->count();
-                        $isLastThree = ($index >= $totalItems - 3);
+                        $isLastThree = ($totalItems >= 15 && $index >= $totalItems - 3);
                     @endphp
                     <tr class="hover:bg-gray-50 transition-colors duration-150 {{ $item->isLowStock() ? 'bg-yellow-50/50 border-l-2 border-yellow-400' : '' }}">
                         <td class="px-6 py-4 whitespace-nowrap sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] {{ $item->isLowStock() ? 'bg-yellow-50/50' : 'bg-white' }}">

@@ -1,5 +1,32 @@
 <!-- Sidebar -->
 <div class="w-64 sidebar-glass shadow-2xl h-full">
+    <style>
+        /* Custom Scrollbar for Sidebar */
+        .sidebar-glass nav::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .sidebar-glass nav::-webkit-scrollbar-track {
+            background: rgba(61, 41, 20, 0.3);
+            border-radius: 4px;
+        }
+        
+        .sidebar-glass nav::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #D4AF37 0%, #B8941F 100%);
+            border-radius: 4px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .sidebar-glass nav::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #E5C158 0%, #D4AF37 100%);
+        }
+        
+        /* Firefox scrollbar */
+        .sidebar-glass nav {
+            scrollbar-width: thin;
+            scrollbar-color: #D4AF37 rgba(61, 41, 20, 0.3);
+        }
+    </style>
     <div class="flex flex-col h-full">
         <!-- Logo Section -->
         <div class="relative flex items-center justify-center py-6 px-4 border-b border-amber-500/20">
@@ -157,6 +184,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                         </svg>
                         Users
+                    </a>
+                    
+                    <a href="{{ route('activity-logs.index') }}" class="sidebar-link flex items-center px-4 py-3 text-sm font-medium rounded-xl {{ request()->routeIs('activity-logs.*') ? 'active text-white' : 'text-amber-100 hover:text-white' }}">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Activity Logs
                     </a>
                 </div>
             </div>

@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\ActivityLog;
 
 class BatchController extends Controller
 {
@@ -158,9 +159,11 @@ class BatchController extends Controller
                 'borrow', 'blue',
                 auth()->id()
             );
+            
+            ActivityLog::log('created', $batch);
         });
 
-        return redirect()->route('batches.index')
+        return redirect()->route('batches.index', ['page' => $request->input('page', 1)])
                         ->with('success', 'Stock replenished successfully. New batch created.');
     }
 
@@ -218,14 +221,14 @@ class BatchController extends Controller
             }
         });
 
-        return redirect()->route('batches.index')
+        return redirect()->route('batches.index', ['page' => $request->input('page', 1)])
                         ->with('success', 'Batch updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Batch $batch)
+    public function destroy(Request $request, Batch $batch)
     {
         DB::transaction(function () use ($batch) {
             // Decrease item quantity
@@ -235,7 +238,7 @@ class BatchController extends Controller
             $batch->delete();
         });
 
-        return redirect()->route('batches.index')
+        return redirect()->route('batches.index', ['page' => $request->input('page', 1)])
                         ->with('success', 'Batch deleted successfully.');
     }
 

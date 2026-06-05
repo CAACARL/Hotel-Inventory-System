@@ -10,6 +10,7 @@ use App\Http\Controllers\TransactionExportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ActivityLogController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -69,6 +70,7 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     
     // Batch Management (Admin only)
     Route::middleware(['admin'])->group(function () {
+        Route::get('/batches/export', [TransactionExportController::class, 'exportBatches'])->name('batches.export');
         Route::resource('batches', \App\Http\Controllers\BatchController::class)->except(['edit', 'update', 'create', 'destroy']);
         Route::post('/batches/{batch}/mark-expired', [\App\Http\Controllers\BatchController::class, 'markExpired'])->name('batches.mark-expired');
     });
@@ -88,6 +90,11 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     Route::middleware(['admin'])->group(function () {
         Route::resource('users', UserController::class);
         Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+    });
+
+    // Activity Logs (Admin only)
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 });
 
