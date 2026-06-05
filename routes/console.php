@@ -13,3 +13,6 @@ Schedule::command('depreciation:update')->monthly();
 
 // Schedule expired consumables check to run daily
 Schedule::command('consumables:check-expired')->daily();
+
+// Schedule inventory reconciliation to run daily at 2 AM
+Schedule::command('inventory:reconcile-quantities')->dailyAt('02:00');

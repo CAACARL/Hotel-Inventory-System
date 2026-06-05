@@ -8,6 +8,7 @@ class Transaction extends Model
 {
     protected $fillable = [
         'item_id',
+        'batch_id',
         'user_id',
         'type',
         'transaction_type',
@@ -38,5 +39,13 @@ class Transaction extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the batch that owns the transaction.
+     */
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
     }
 }

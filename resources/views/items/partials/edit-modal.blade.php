@@ -199,8 +199,21 @@
 </div>
 
 <!-- Dispose Modal -->
-<div x-data="{ open: false, itemId: null, itemName: '', maxQty: 0 }"
-     @open-dispose.window="open = true; itemId = $event.detail.id; itemName = $event.detail.name; maxQty = $event.detail.qty"
+<div x-data="{ 
+    open: false, 
+    itemId: null, 
+    itemName: '', 
+    maxQty: 0,
+    batches: [],
+    selectedBatch: null,
+    async loadBatches() {
+        if (!this.itemId) return;
+        const response = await fetch(`/items/${this.itemId}/batches`);
+        this.batches = await response.json();
+        this.selectedBatch = this.batches.length > 0 ? this.batches[0].id : null;
+    }
+}"
+     @open-dispose.window="open = true; itemId = $event.detail.id; itemName = $event.detail.name; maxQty = $event.detail.qty; loadBatches()"
      x-show="open"
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
@@ -223,7 +236,7 @@
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-             class="modal-container bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-auto relative z-10 border border-red-200">
+             class="modal-container bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-auto relative z-10 border border-red-200">
 
             <div class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t-2xl" style="background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);">
                 <div class="flex items-center">
@@ -248,17 +261,32 @@
                 <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 <div class="space-y-3">
                     <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Select Batch <span class="text-red-500">*</span></label>
+                        <select name="batch_id" x-model="selectedBatch" required
+                                class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                            <option value="">Select a batch...</option>
+                            <template x-for="batch in batches" :key="batch.id">
+                                <option :value="batch.id" x-text="`${batch.batch_number} - ${batch.location || 'No location'} (${batch.quantity} available${batch.expiry_date ? ', expires ' + batch.expiry_date : ''})`"></option>
+                            </template>
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Select which batch to dispose from</p>
+                    </div>
+                    <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Quantity to Dispose <span class="text-red-500">*</span></label>
-                        <input type="number" name="quantity" min="1" :max="maxQty" required
+                        <input type="number" name="quantity" min="1" required
                                class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400"
                                placeholder="Enter quantity">
-                        <p class="mt-1 text-xs text-gray-500">Available stock: <span class="font-semibold" x-text="maxQty"></span></p>
+                        <p class="mt-1 text-xs text-gray-500">
+                            <span x-show="selectedBatch">
+                                Available in selected batch: <span class="font-semibold" x-text="batches.find(b => b.id == selectedBatch)?.quantity || 0"></span>
+                            </span>
+                        </p>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Reason <span class="text-red-500">*</span></label>
                         <input type="text" name="notes" required
                                class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400"
-                               placeholder="e.g. Broken beyond repair">
+                               placeholder="e.g. Water damage, defective, expired">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 mt-4 pt-3 border-t border-gray-200">
@@ -281,7 +309,17 @@
 </div>
 
 <!-- Borrow Item Modal -->
-<div x-show="borrowModal" 
+<div x-data="{ 
+    borrowBatches: [],
+    borrowQuantity: 1,
+    async loadBorrowBatches() {
+        if (!this.selectedItem?.id || !this.borrowQuantity) return;
+        const response = await fetch(`/items/${this.selectedItem.id}/borrow-batches?quantity=${this.borrowQuantity}`);
+        const data = await response.json();
+        this.borrowBatches = data.batches || [];
+    }
+}"
+     x-show="borrowModal" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
@@ -291,7 +329,7 @@
      class="fixed inset-0 z-[60] overflow-y-auto" 
      @keydown.escape="borrowModal = false"
      style="display: none;"
-     x-init="$watch('borrowModal', value => { document.body.classList.toggle('modal-open', value) })">
+     x-init="$watch('borrowModal', value => { document.body.classList.toggle('modal-open', value); if (value) { borrowQuantity = 1; loadBorrowBatches(); } })">
     
     <!-- Enhanced Backdrop with Blur -->
     <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="borrowModal = false"></div>
@@ -348,10 +386,47 @@
                                id="borrow_quantity" 
                                name="quantity" 
                                min="1"
+                               x-model="borrowQuantity"
+                               @input.debounce.500ms="loadBorrowBatches()"
                                :max="selectedItem?.quantity"
                                required
                                class="modern-input w-full px-3 py-2 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 hover:border-gray-400 text-sm" 
                                placeholder="Enter quantity">
+                    </div>
+
+                    <!-- Batch Information -->
+                    <div x-show="borrowBatches.length > 0" class="mt-3">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Will be borrowed from:
+                        </label>
+                        <div class="space-y-1.5">
+                            <template x-for="(batch, index) in borrowBatches" :key="index">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-blue-900" x-text="batch.batch_number"></div>
+                                            <div class="text-blue-700 mt-0.5">
+                                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                                <span x-text="batch.location"></span>
+                                            </div>
+                                            <div x-show="batch.expiry_date" class="text-blue-600 mt-0.5 text-xs">
+                                                Expires: <span x-text="batch.expiry_date"></span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <div class="font-bold text-blue-900" x-text="batch.quantity + ' ' + selectedItem?.unit"></div>
+                                            <div class="text-blue-600 text-xs" x-text="'of ' + batch.available"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     
                     <div>
@@ -408,7 +483,17 @@
 </div>
 
 <!-- Return Item Modal -->
-<div x-show="returnModal" 
+<div x-data="{ 
+    returnBatches: [],
+    returnQuantity: 1,
+    async loadReturnBatches() {
+        if (!this.selectedItem?.id || !this.returnQuantity) return;
+        const response = await fetch(`/items/${this.selectedItem.id}/return-batches?quantity=${this.returnQuantity}`);
+        const data = await response.json();
+        this.returnBatches = data.batches || [];
+    }
+}"
+     x-show="returnModal" 
      x-transition:enter="transition ease-out duration-300"
      x-transition:enter-start="opacity-0"
      x-transition:enter-end="opacity-100"
@@ -418,7 +503,7 @@
      class="fixed inset-0 z-[60] overflow-y-auto" 
      @keydown.escape="returnModal = false"
      style="display: none;"
-     x-init="$watch('returnModal', value => { document.body.classList.toggle('modal-open', value) })">
+     x-init="$watch('returnModal', value => { document.body.classList.toggle('modal-open', value); if (value) { returnQuantity = selectedItem?.borrowed_quantity || 1; loadReturnBatches(); } })">>
     
     <!-- Enhanced Backdrop with Blur -->
     <div class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" @click="returnModal = false"></div>
@@ -493,7 +578,8 @@
                                        name="quantity" 
                                        min="1" 
                                        :max="selectedItem?.borrowed_quantity"
-                                       :value="selectedItem?.borrowed_quantity"
+                                       x-model="returnQuantity"
+                                       @input.debounce.500ms="loadReturnBatches()"
                                        required
                                        class="modern-input w-full px-3 py-2 pr-12 border border-gray-300 rounded-xl transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500 hover:border-gray-400 text-sm"
                                        placeholder="Enter quantity to return">
@@ -504,6 +590,44 @@
                             <p class="mt-1 text-xs text-gray-500 bg-gray-50 rounded-lg p-1.5">
                                 Maximum returnable: <span class="font-semibold" x-text="selectedItem?.borrowed_quantity + ' ' + selectedItem?.unit"></span>
                             </p>
+                        </div>
+
+                        <!-- Batch Information -->
+                        <div x-show="returnBatches.length > 0" class="mt-3">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">
+                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Will be returned to:
+                            </label>
+                            <div class="space-y-1.5">
+                                <template x-for="(batch, index) in returnBatches" :key="index">
+                                    <div class="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-xs">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-green-900" x-text="batch.batch_number"></div>
+                                                <div class="text-green-700 mt-0.5">
+                                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    </svg>
+                                                    <span x-text="batch.location"></span>
+                                                </div>
+                                                <div class="text-green-600 mt-0.5 text-xs">
+                                                    Borrowed on: <span x-text="batch.borrowed_at"></span>
+                                                </div>
+                                                <div x-show="batch.expiry_date" class="text-green-600 mt-0.5 text-xs">
+                                                    Expires: <span x-text="batch.expiry_date"></span>
+                                                </div>
+                                            </div>
+                                            <div class="text-right ml-2">
+                                                <div class="font-bold text-green-900" x-text="batch.quantity + ' ' + selectedItem?.unit"></div>
+                                                <div class="text-green-600 text-xs" x-text="'of ' + batch.borrowed"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
 
                         <!-- Return Notes -->

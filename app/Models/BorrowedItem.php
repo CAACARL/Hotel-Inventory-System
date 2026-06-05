@@ -11,6 +11,7 @@ class BorrowedItem extends Model
 
     protected $fillable = [
         'item_id',
+        'batch_id',
         'user_id',
         'quantity',
         'borrower_name',
@@ -32,5 +33,10 @@ class BorrowedItem extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class);
     }
 }

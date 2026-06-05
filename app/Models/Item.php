@@ -64,6 +64,14 @@ class Item extends Model
     }
 
     /**
+     * Get all batches for this item.
+     */
+    public function batches()
+    {
+        return $this->hasMany(Batch::class);
+    }
+
+    /**
      * Get the transactions for the item.
      */
     public function transactions()
@@ -108,8 +116,30 @@ class Item extends Model
      */
     public function getBorrowedQuantityByUser($userId)
     {
-        $borrowedItem = $this->borrowedItems()->where('user_id', $userId)->first();
-        return $borrowedItem ? $borrowedItem->quantity : 0;
+        return $this->borrowedItems()->where('user_id', $userId)->sum('quantity');
+    }
+
+    /**
+     * Get available batches for FIFO/FEFO
+     * For consumables: Use FEFO (First Expired First Out)
+     * For non-consumables: Use FIFO (First In First Out)
+     */
+    public function getAvailableBatches()
+    {
+        $query = $this->batches()
+            ->where('quantity', '>', 0)
+            ->where('status', 'active');
+
+        if ($this->isConsumable()) {
+            // FEFO: Order by expiry date (NULL values last), then by creation date
+            // This handles mixed batches: some with expiry, some without
+            // Batches with expiry dates are used first (sorted by soonest expiry)
+            // Batches without expiry dates are used last (sorted by oldest first)
+            return $query->orderByRaw('expiry_date IS NULL, expiry_date ASC, created_at ASC')->get();
+        } else {
+            // FIFO: Order by creation date for non-consumables
+            return $query->orderBy('created_at', 'asc')->get();
+        }
     }
 
     /**

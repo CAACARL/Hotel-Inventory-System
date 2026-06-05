@@ -170,6 +170,12 @@
                             <span class="text-lg font-semibold text-gray-900">{{ $transaction->item->name }}</span>
                         </div>
                         
+                        @if($transaction->batch)
+                        <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                            <span class="text-sm font-semibold text-gray-700">Batch Number</span>
+                            <span class="text-sm text-gray-600 font-mono">{{ $transaction->batch->batch_number }}</span>
+                        </div>
+                        @endif
                         <div class="flex justify-between items-center py-3 border-b border-gray-100">
                             <span class="text-sm font-semibold text-gray-700">Category</span>
                             <span class="text-lg font-semibold text-gray-900">{{ $transaction->item->category->name }}</span>

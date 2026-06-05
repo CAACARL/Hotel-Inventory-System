@@ -15,7 +15,7 @@ class TransactionController extends Controller
     {
         $query = Transaction::with(['item' => function ($q) {
             $q->withTrashed()->with('category');
-        }, 'user']);
+        }, 'user', 'batch']);
 
         if (auth()->user()->isStaff()) {
             $query->where('user_id', auth()->id());
@@ -53,7 +53,7 @@ class TransactionController extends Controller
 
         $transaction->load(['item' => function ($q) {
             $q->withTrashed()->with('category');
-        }, 'user']);
+        }, 'user', 'batch']);
         return view('transactions.show', compact('transaction'));
     }
 

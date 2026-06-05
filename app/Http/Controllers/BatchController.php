@@ -90,9 +90,9 @@ class BatchController extends Controller
             'unit_cost' => 'nullable|numeric|min:0',
             'manufacture_date' => 'nullable|date',
             'expiry_date' => 'nullable|date|after:manufacture_date',
-            'supplier' => 'nullable|string|max:255',
+            'supplier' => 'required|string|max:255',
             'lot_number' => 'nullable|string|max:255',
-            'location' => 'nullable|string|max:255',
+            'location' => 'required|string|max:255',
             'notes' => 'nullable|string',
             // Depreciation fields
             'depreciation_method' => 'nullable|in:straight_line,declining_balance',

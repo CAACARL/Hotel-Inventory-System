@@ -53,6 +53,9 @@ Route::middleware(['auth', 'verified', 'two-factor'])->group(function () {
     Route::get('/items/{item}/return', [ItemController::class, 'return'])->name('items.return');
     Route::post('/items/{item}/return', [ItemController::class, 'processReturn'])->name('items.process-return');
     Route::get('/items/{item}/transactions/export', [ItemExportController::class, 'exportTransactions'])->name('items.transactions.export');
+    Route::get('/items/{item}/batches', [ItemController::class, 'getBatches'])->name('items.get-batches');
+    Route::get('/items/{item}/borrow-batches', [ItemController::class, 'getBorrowBatches'])->name('items.get-borrow-batches');
+    Route::get('/items/{item}/return-batches', [ItemController::class, 'getReturnBatches'])->name('items.get-return-batches');
     
     // Items management (Admin only)
     Route::middleware(['admin'])->group(function () {

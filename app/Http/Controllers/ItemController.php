@@ -231,50 +231,69 @@ class ItemController extends Controller
             'borrower_department' => 'required|string',
         ]);
 
-        // Create transaction record for history
-        Transaction::create([
-            'item_id' => $item->id,
-            'user_id' => auth()->id(),
-            'type' => 'out',
-            'transaction_type' => 'borrow',
-            'quantity' => $request->quantity,
-            'notes' => $request->notes,
-            'borrower_name' => $request->borrower_name,
-            'borrower_department' => $request->borrower_department,
-            'reference_number' => 'BOR-' . str_pad(Transaction::where('transaction_type', 'borrow')->count() + 1, 3, '0', STR_PAD_LEFT),
-            'transaction_date' => now(),
-        ]);
+        \DB::transaction(function () use ($request, $item) {
+            $remainingQty = $request->quantity;
+            $batches = $item->getAvailableBatches(); // FIFO/FEFO logic
 
-        // Update or create borrowed item record
-        $borrowedItem = BorrowedItem::where('item_id', $item->id)
-            ->where('user_id', auth()->id())
-            ->first();
+            if ($batches->sum('quantity') < $remainingQty) {
+                throw new \Exception('Not enough stock available in batches.');
+            }
 
-        if ($borrowedItem) {
-            // User already has this item borrowed, increase quantity
-            $borrowedItem->increment('quantity', $request->quantity);
-        } else {
-            // Create new borrowed item record
-            BorrowedItem::create([
-                'item_id' => $item->id,
-                'user_id' => auth()->id(),
-                'quantity' => $request->quantity,
-                'borrower_name' => $request->borrower_name,
-                'borrower_department' => $request->borrower_department,
-                'notes' => $request->notes,
-                'reference_number' => 'BOR-' . str_pad(BorrowedItem::count() + 1, 3, '0', STR_PAD_LEFT),
-                'borrowed_at' => now(),
-            ]);
-        }
+            foreach ($batches as $batch) {
+                if ($remainingQty <= 0) break;
 
-        // Update item quantity
-        $item->decrement('quantity', $request->quantity);
+                $deductQty = min($batch->quantity, $remainingQty);
 
-        // If all stock is now borrowed, mark as in_use
-        $item->refresh();
-        if ($item->quantity <= 0 && $item->status === 'available') {
-            $item->update(['status' => 'in_use']);
-        }
+                // Create transaction record for this batch
+                Transaction::create([
+                    'item_id' => $item->id,
+                    'batch_id' => $batch->id,
+                    'user_id' => auth()->id(),
+                    'type' => 'out',
+                    'transaction_type' => 'borrow',
+                    'quantity' => $deductQty,
+                    'notes' => $request->notes,
+                    'reference_number' => 'BOR-' . str_pad(Transaction::where('transaction_type', 'borrow')->count() + 1, 3, '0', STR_PAD_LEFT),
+                    'transaction_date' => now(),
+                ]);
+
+                // Update or create borrowed item record per batch
+                $borrowedItem = BorrowedItem::where('item_id', $item->id)
+                    ->where('batch_id', $batch->id)
+                    ->where('user_id', auth()->id())
+                    ->first();
+
+                if ($borrowedItem) {
+                    $borrowedItem->increment('quantity', $deductQty);
+                } else {
+                    BorrowedItem::create([
+                        'item_id' => $item->id,
+                        'batch_id' => $batch->id,
+                        'user_id' => auth()->id(),
+                        'quantity' => $deductQty,
+                        'borrower_name' => $request->borrower_name,
+                        'borrower_department' => $request->borrower_department,
+                        'notes' => $request->notes,
+                        'reference_number' => 'BOR-' . str_pad(BorrowedItem::count() + 1, 3, '0', STR_PAD_LEFT),
+                        'borrowed_at' => now(),
+                    ]);
+                }
+
+                // Deduct from batch quantity
+                $batch->decrement('quantity', $deductQty);
+                $remainingQty -= $deductQty;
+            }
+
+            // Update item quantity
+            $item->decrement('quantity', $request->quantity);
+
+            // If all stock is now borrowed, mark as in_use
+            $item->refresh();
+            if ($item->quantity <= 0 && $item->status === 'available') {
+                $item->update(['status' => 'in_use']);
+            }
+        });
+
         \App\Models\Notification::notifyAdmins(
             'new_borrow',
             'New Borrow: ' . $item->name,
@@ -343,35 +362,47 @@ class ItemController extends Controller
     {
         if ($item->trashed()) abort(403, 'This item is archived.');
         $request->validate([
-            'quantity' => 'required|integer|min:1|max:' . $item->quantity,
+            'quantity' => 'required|integer|min:1',
+            'batch_id' => 'required|exists:batches,id',
             'notes' => 'required|string',
         ]);
 
-        // Create disposal transaction
-        Transaction::create([
-            'item_id' => $item->id,
-            'user_id' => auth()->id(),
-            'type' => 'out',
-            'transaction_type' => 'disposal',
-            'quantity' => $request->quantity,
-            'notes' => $request->notes,
-            'reference_number' => 'DIS-' . str_pad(Transaction::where('transaction_type', 'disposal')->count() + 1, 3, '0', STR_PAD_LEFT),
-            'transaction_date' => now(),
-        ]);
+        \DB::transaction(function () use ($request, $item) {
+            $batch = \App\Models\Batch::findOrFail($request->batch_id);
 
-        // Update item quantity
-        $item->decrement('quantity', $request->quantity);
+            if ($request->quantity > $batch->quantity) {
+                throw new \Exception('Not enough quantity in selected batch.');
+            }
 
-        // If quantity hits 0 and nothing is borrowed, mark as disposed
-        // If quantity hits 0 but items are still borrowed, mark as in_use
-        $item->refresh();
-        $borrowedCount = \App\Models\BorrowedItem::where('item_id', $item->id)->sum('quantity');
-        if ($item->quantity <= 0) {
-            $item->update([
-                'status'   => $borrowedCount > 0 ? 'in_use' : 'disposed',
-                'quantity' => 0,
+            // Create disposal transaction
+            Transaction::create([
+                'item_id' => $item->id,
+                'batch_id' => $batch->id,
+                'user_id' => auth()->id(),
+                'type' => 'out',
+                'transaction_type' => 'disposal',
+                'quantity' => $request->quantity,
+                'notes' => $request->notes . ' (Batch: ' . $batch->batch_number . ')',
+                'reference_number' => 'DIS-' . str_pad(Transaction::where('transaction_type', 'disposal')->count() + 1, 3, '0', STR_PAD_LEFT),
+                'transaction_date' => now(),
             ]);
-        }
+
+            // Deduct from batch quantity
+            $batch->decrement('quantity', $request->quantity);
+
+            // Update item quantity
+            $item->decrement('quantity', $request->quantity);
+
+            // If quantity hits 0 and nothing is borrowed, mark as disposed
+            $item->refresh();
+            $borrowedCount = \App\Models\BorrowedItem::where('item_id', $item->id)->sum('quantity');
+            if ($item->quantity <= 0) {
+                $item->update([
+                    'status'   => $borrowedCount > 0 ? 'in_use' : 'disposed',
+                    'quantity' => 0,
+                ]);
+            }
+        });
 
         return redirect()->route('items.index', ['page' => $request->input('page', 1)])
             ->with('success', 'Item marked for disposal successfully.');
@@ -404,45 +435,62 @@ class ItemController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        // Create return transaction for history
-        Transaction::create([
-            'item_id' => $item->id,
-            'user_id' => auth()->id(),
-            'type' => 'in',
-            'transaction_type' => 'return',
-            'quantity' => $request->quantity,
-            'notes' => $request->notes,
-            'reference_number' => 'RET-' . str_pad(Transaction::where('transaction_type', 'return')->count() + 1, 3, '0', STR_PAD_LEFT),
-            'transaction_date' => now(),
-        ]);
+        \DB::transaction(function () use ($request, $item) {
+            $remainingQty = $request->quantity;
 
-        // Update borrowed item record
-        $borrowedItem = BorrowedItem::where('item_id', $item->id)
-            ->where('user_id', auth()->id())
-            ->first();
+            // Get borrowed items by user, ordered by oldest first
+            $borrowedItems = BorrowedItem::where('item_id', $item->id)
+                ->where('user_id', auth()->id())
+                ->orderBy('borrowed_at', 'asc')
+                ->get();
 
-        if ($borrowedItem) {
-            if ($borrowedItem->quantity <= $request->quantity) {
-                // Returning all or more than borrowed, delete the record
-                $borrowedItem->delete();
-            } else {
-                // Returning partial quantity, decrease the borrowed amount
-                $borrowedItem->decrement('quantity', $request->quantity);
+            foreach ($borrowedItems as $borrowedItem) {
+                if ($remainingQty <= 0) break;
+
+                $returnQty = min($borrowedItem->quantity, $remainingQty);
+
+                // Create return transaction
+                Transaction::create([
+                    'item_id' => $item->id,
+                    'batch_id' => $borrowedItem->batch_id,
+                    'user_id' => auth()->id(),
+                    'type' => 'in',
+                    'transaction_type' => 'return',
+                    'quantity' => $returnQty,
+                    'notes' => $request->notes,
+                    'reference_number' => 'RET-' . str_pad(Transaction::where('transaction_type', 'return')->count() + 1, 3, '0', STR_PAD_LEFT),
+                    'transaction_date' => now(),
+                ]);
+
+                // Return quantity to original batch
+                $batch = $borrowedItem->batch;
+                if ($batch) {
+                    $batch->increment('quantity', $returnQty);
+                }
+
+                // Update borrowed item record
+                if ($borrowedItem->quantity <= $returnQty) {
+                    $borrowedItem->delete();
+                } else {
+                    $borrowedItem->decrement('quantity', $returnQty);
+                }
+
+                $remainingQty -= $returnQty;
             }
-        }
 
-        // Update item quantity
-        $item->increment('quantity', $request->quantity);
+            // Update item quantity
+            $item->increment('quantity', $request->quantity);
 
-        // If item was in_use (all borrowed), mark back as available now that stock returned
-        $item->refresh();
-        if ($item->status === 'in_use' && $item->quantity > 0) {
-            $item->update(['status' => 'available']);
-        }
-        // If was in_use with 0 quantity (all disposed+borrowed), now that borrowed returned check if fully disposed
-        if ($item->status === 'in_use' && $item->quantity <= 0) {
-            $item->update(['status' => 'disposed']);
-        }
+            // If item was in_use, mark back as available now that stock returned
+            $item->refresh();
+            if ($item->status === 'in_use' && $item->quantity > 0) {
+                $item->update(['status' => 'available']);
+            }
+            if ($item->status === 'in_use' && $item->quantity <= 0) {
+                $item->update(['status' => 'disposed']);
+            }
+        });
+
         \App\Models\Notification::notifyAdmins(
             'item_returned',
             'Item Returned: ' . $item->name,
@@ -469,11 +517,9 @@ class ItemController extends Controller
      */
     private function getBorrowedQuantityByUser(Item $item, $userId)
     {
-        $borrowedItem = BorrowedItem::where('item_id', $item->id)
+        return BorrowedItem::where('item_id', $item->id)
             ->where('user_id', $userId)
-            ->first();
-            
-        return $borrowedItem ? $borrowedItem->quantity : 0;
+            ->sum('quantity');
     }
 
     /**
@@ -481,7 +527,7 @@ class ItemController extends Controller
      */
     public function borrowedItems()
     {
-        $query = BorrowedItem::with(['item.category', 'user'])
+        $query = BorrowedItem::with(['item.category', 'user', 'batch'])
             ->orderBy('borrowed_at', 'desc');
 
         // Staff only see their own borrowed items
@@ -493,6 +539,7 @@ class ItemController extends Controller
                 return (object)[
                     'item' => $borrowedItem->item,
                     'user' => $borrowedItem->user,
+                    'batch' => $borrowedItem->batch,
                     'quantity_borrowed' => $borrowedItem->quantity,
                     'borrowed_date' => $borrowedItem->borrowed_at,
                     'borrower_name' => $borrowedItem->borrower_name,
@@ -522,5 +569,108 @@ class ItemController extends Controller
         foreach ($expiredBatches as $batch) {
             $batch->markAsExpired();
         }
+    }
+
+    /**
+     * Get available batches for an item (AJAX endpoint for disposal modal)
+     */
+    public function getBatches(Item $item)
+    {
+        $batches = $item->batches()
+            ->where('quantity', '>', 0)
+            ->where('status', 'active')
+            ->select('id', 'batch_number', 'quantity', 'expiry_date', 'location')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function($batch) {
+                return [
+                    'id' => $batch->id,
+                    'batch_number' => $batch->batch_number,
+                    'quantity' => $batch->quantity,
+                    'expiry_date' => $batch->expiry_date ? $batch->expiry_date->format('Y-m-d') : null,
+                    'location' => $batch->location,
+                ];
+            });
+
+        return response()->json($batches);
+    }
+
+    /**
+     * Get batches that will be used for borrowing (with FIFO/FEFO order)
+     */
+    public function getBorrowBatches(Item $item, Request $request)
+    {
+        $quantity = $request->input('quantity', 0);
+        
+        // Get batches in FIFO/FEFO order
+        $batches = $item->getAvailableBatches();
+        
+        $selectedBatches = [];
+        $remainingQty = $quantity;
+        
+        foreach ($batches as $batch) {
+            if ($remainingQty <= 0) break;
+            
+            $takeQty = min($batch->quantity, $remainingQty);
+            
+            $selectedBatches[] = [
+                'batch_number' => $batch->batch_number,
+                'location' => $batch->location ?? 'Not specified',
+                'quantity' => $takeQty,
+                'available' => $batch->quantity,
+                'expiry_date' => $batch->expiry_date ? $batch->expiry_date->format('M d, Y') : null,
+            ];
+            
+            $remainingQty -= $takeQty;
+        }
+        
+        return response()->json([
+            'batches' => $selectedBatches,
+            'total' => $quantity,
+            'feasible' => $remainingQty <= 0,
+        ]);
+    }
+
+    /**
+     * Get batches that items will be returned to
+     */
+    public function getReturnBatches(Item $item, Request $request)
+    {
+        $quantity = $request->input('quantity', 0);
+        $userId = auth()->id();
+        
+        // Get borrowed items by user, ordered by oldest first
+        $borrowedItems = BorrowedItem::where('item_id', $item->id)
+            ->where('user_id', $userId)
+            ->with('batch')
+            ->orderBy('borrowed_at', 'asc')
+            ->get();
+        
+        $returnBatches = [];
+        $remainingQty = $quantity;
+        
+        foreach ($borrowedItems as $borrowedItem) {
+            if ($remainingQty <= 0) break;
+            
+            $returnQty = min($borrowedItem->quantity, $remainingQty);
+            
+            if ($borrowedItem->batch) {
+                $returnBatches[] = [
+                    'batch_number' => $borrowedItem->batch->batch_number,
+                    'location' => $borrowedItem->batch->location ?? 'Not specified',
+                    'quantity' => $returnQty,
+                    'borrowed' => $borrowedItem->quantity,
+                    'borrowed_at' => $borrowedItem->borrowed_at->format('M d, Y'),
+                    'expiry_date' => $borrowedItem->batch->expiry_date ? $borrowedItem->batch->expiry_date->format('M d, Y') : null,
+                ];
+            }
+            
+            $remainingQty -= $returnQty;
+        }
+        
+        return response()->json([
+            'batches' => $returnBatches,
+            'total' => $quantity,
+        ]);
     }
 }

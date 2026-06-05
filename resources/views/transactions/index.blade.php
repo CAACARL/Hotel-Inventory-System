@@ -183,6 +183,9 @@
                                     @endif
                                     <div class="min-w-0">
                                         <div class="font-semibold text-gray-900 text-sm truncate">{{ $transaction->item->name }}</div>
+                                        @if($transaction->batch)
+                                            <div class="text-xs text-gray-400">Batch: {{ $transaction->batch->batch_number }}</div>
+                                        @endif
                                         <div class="text-xs text-gray-500">{{ $transaction->item->category->name }}</div>
                                     </div>
                                 </div>
@@ -277,6 +280,9 @@
                                             @endif
                                             <div>
                                                 <div class="text-sm font-semibold text-gray-900">{{ $transaction->item->name }}</div>
+                                                @if($transaction->batch)
+                                                    <div class="text-xs text-gray-400">Batch: {{ $transaction->batch->batch_number }}</div>
+                                                @endif
                                                 <div class="text-xs text-gray-500">{{ $transaction->item->category->name }}</div>
                                             </div>
                                         </div>
